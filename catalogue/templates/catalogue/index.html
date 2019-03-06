@@ -1,0 +1,49 @@
+{% extends 'oc_projet_13/base.html' %}
+
+{% block body %}
+    <div class="row mt-4">
+        <div class="col-12">
+
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs">
+                        <li class="nav-item">
+                            <a href="{% url 'index' %}"
+                               class="nav-link
+                                   {% if index %}
+                                   active
+                                   {% endif %}
+                                   ">Accueil</a>
+                        </li>
+                        {% for root_event_type in root_events_types %}
+                            <li class="nav-item">
+                                <a href="{% url 'catalogue:show-eventtype' root_event_type.pk %}"
+                                   class="nav-link
+                                   {% if eventtype and eventtype.pk == root_event_type.pk %}
+                                   active
+                                   {% endif %}
+                                   ">{{ root_event_type.label }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="card-body">
+                    {% if eventtype %}
+                        <h3 class="card-title">Événement pour
+                            {% if selected_eventtype %}
+                                {{ selected_eventtype.label }}
+                            {% else %}
+                                {{ eventtype.label }}
+                            {% endif %}
+                        </h3>
+                    {% endif %}
+                    {% block index_catalogue %}
+                        {% if not eventtype %}
+                            <h3 class="card-title">Bienvenue sur l'accueil.</h3>
+                        {% endif %}
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

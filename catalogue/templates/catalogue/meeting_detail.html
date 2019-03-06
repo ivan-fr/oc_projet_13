@@ -1,0 +1,121 @@
+{% extends 'catalogue/index.html' %}
+
+{% block index_catalogue %}
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    {% for ancestor in breadcrumb %}
+                        <li class="breadcrumb-item {% if forloop.last %} active {% endif %}">
+                            <a href="{% url 'catalogue:show-eventtype' ancestor.pk %}">{{ ancestor.label }}</a>
+                        </li>
+                    {% endfor %}
+                </ol>
+            </nav>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-lg-4" align="center">
+            <img src="{{ object.photo.url }}" alt="photo meeting">
+            <p><span
+                    class="badge badge-primary">{{ object.price|floatformat:2 }} euros/pers</span>
+            </p>
+        </div>
+        <div class="col-12 col-lg-8">
+            <h3>{{ object.place.name }}</h3>
+            <p>{{ object.place.street }}, {{ object.place.postal_code }}, {{ object.place.city|capfirst }}<br>
+                {{ object.place.space_available }} places environs</p>
+
+            <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active"
+                       id="pills-fiche-evenement-tab"
+                       data-toggle="pill" href="#pills-fiche-evenement"
+                       role="tab"
+                       aria-controls="pills-fiche-evenement"
+                       aria-selected="true">Fiche événement</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="pills-date-tarifs-tab"
+                       data-toggle="pill" href="#pills-date-tarifs" role="tab"
+                       aria-controls="pills-date-tarifs" aria-selected="false">Dates</a>
+                </li>
+            </ul>
+            <div class="tab-content" id="pills-tabContent">
+                <div class="tab-pane fade show  active"
+                     id="pills-fiche-evenement"
+                     role="tabpanel"
+                     aria-labelledby="pills-fiche-evenement-tab">
+                    <h3>{{ object.title }}</h3>
+                    {% for note in object.notes.all %}
+                        {% if forloop.first %}
+                            <p><b>{{ note }}</b></p>
+                        {% else %}
+                            <p>{{ note }}</p>
+                        {% endif %}
+                    {% endfor %}
+                    <b>Metteur en scène
+                        :</b> {{ object.directors.all|join:", " }} <br>
+                    <b>Auteur :</b> {{ object.authors.all|join:", " }} <br>
+                    <b>Artistes :</b> {{ object.artists.all|join:", " }}
+
+                </div>
+                <div class="tab-pane fade" id="pills-date-tarifs"
+                     role="tabpanel"
+                     aria-labelledby="pills-date-tarifs-tab">
+                    {% if by_month %}
+                        <table class="table table-bordered table-dark">
+                            <thead>
+                            <tr>
+                                <th>Mois</th>
+                                <th>Jour</th>
+                                <th>Debut</th>
+                                <th>Places restantes</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for dt, occurrences in by_month %}
+                                <tr class="month-divider">
+                                    <th rowspan="{{ occurrences|length }}">
+                                        {{ dt|date:"F" }}
+                                    </th>
+                                    {% for o in occurrences %}
+                                        <td>
+                                            {{ o|date:"l j F" }}
+                                        </td>
+                                        <td>{{ o|date:"H:i" }}</td>
+                                        <td>{{ object.place.space_available }}</td>
+                                        <td class="text-center">
+                                            <button class="sc-add-to-cart btn btn-warning"
+                                                    data-name="{{ object.title }}"
+                                                    data-id="{{ object.id }}"
+                                                    data-date="{{ o|date:"l j F H:i" }}"
+                                            >
+                                                Réserver
+                                            </button>
+                                        </td>
+                                        </tr>
+                                        {% if not forloop.last %}
+                                            <tr>
+                                        {% endif %}
+                                    {% endfor %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>Pas de prestation en {{ year }}.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <button class="sc-clear-cart"
+                    type="submit">
+                ADD To Cart
+            </button>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+{% endblock %}

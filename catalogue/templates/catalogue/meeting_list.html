@@ -1,0 +1,21 @@
+{% extends 'catalogue/index.html' %}
+
+{% block index_catalogue %}
+    {% if object_list %}
+        <div class="row card-col">
+            {% for meeting in object_list %}
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <div class="card">
+                        <a href="{% url 'catalogue:show-meeting' meeting.pk %}">
+                            <img src="{{ meeting.photo.url }}" height="300px"
+                                 class="card-img-top"
+                                 alt="photo meeting">
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        Il n'y a pas d'événement.
+    {% endif %}
+{% endblock %}
