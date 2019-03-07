@@ -39,3 +39,18 @@
 .card-group [class*='card col-'] {
     padding: 0;
 }
+
+.navbar-light .navbar-nav .nav-link.active {
+    background-color: rgb(219, 219, 219);
+}
+
+.transition {
+    background: white !important;
+    transition: background 2s linear;
+    -webkit-transition: background 2s linear;
+    -moz-transition: background 2s linear;
+}
+
+.color-yellow {
+    background: #ffeeba;
+}
