@@ -4,7 +4,6 @@ jQuery(function ($) {
     let defaults = {
         cart: [],
         addtoCartClass: '.sc-add-to-cart',
-        clearCartClass: '.sc-clear-cart'
     };
 
     class Item {
@@ -28,9 +27,10 @@ jQuery(function ($) {
             this.cart_ele = $(domEle);
 
             //Initial init function
-            this._setEvents();
             this._loadCart();
+            this._markAddItemButton();
             this._updateCartDetails();
+            this._setEvents();
 
             this.tbody_item_cart = $('<tbody></tbody>');
 
@@ -39,7 +39,7 @@ jQuery(function ($) {
                     $('<thead></thead>').html(
                         '<tr>\n' +
                         '      <th scope="col">#</th>\n' +
-                        '      <th scope="col">Nom</th>\n' +
+                        '      <th scope="col">Événement</th>\n' +
                         '      <th scope="col">Date</th>\n' +
                         '      <th scope="col">Quantité</th>\n' +
                         '    </tr>')
@@ -54,6 +54,25 @@ jQuery(function ($) {
             this.row_col_table_item_cart = $('<div></div>').addClass('row mt-4').append(
                 $('<div></div>').addClass('col-12').prepend(table_item_cart)
             );
+        }
+
+        _markAddItemButton() {
+
+            $('button[class*="sc-add-to-cart"][data-id][data-date]')
+                .removeClass('btn-warning')
+                .removeClass('btn-primary')
+                .addClass('btn-warning')
+                .each(function (index) {
+                    $(this).popover('dispose');
+                    $(this).data('popover', false);
+                });
+
+            for (let i in this.cart) {
+                if (this.cart.hasOwnProperty(i)) {
+                    $('button[class*="sc-add-to-cart"][data-id="' + this.cart[i].id + '"][data-date="' + this.cart[i].date + '"]')
+                        .removeClass('btn-warning').addClass('btn-primary');
+                }
+            }
         }
 
         _setEvents() {
@@ -78,7 +97,7 @@ jQuery(function ($) {
                             }
                         }
                     }
-                    mi._addItemToCart(id, name, date, 1);
+                    mi._addItemToCart(id, name, date, 1, this);
                     mi._updateCartDetails();
                 }
             });
@@ -100,7 +119,7 @@ jQuery(function ($) {
         }
 
         /* Helper Functions */
-        _addItemToCart(id, name, date, count) {
+        _addItemToCart(id, name, date, count, button) {
             for (let i in this.cart) {
                 if (this.cart.hasOwnProperty(i) && this.cart[i].id === id && this.cart[i].date === date) {
                     if (this.cart[i].count <= 8) {
@@ -117,6 +136,17 @@ jQuery(function ($) {
                 this.cart.push(item);
                 this._saveCart();
                 this._addTableItem(item);
+                this._markAddItemButton();
+            } else {
+                if ($(button).data("popover") === false) {
+                    console.log('koko');
+                    $(button).popover({
+                        content: 'Vous avez dépassé le nombre d\'événement par panier.',
+                        trigger: 'focus'
+                    });
+                    $(button).popover('show');
+                    $(button).data('popover', true)
+                }
             }
         }
 
@@ -177,7 +207,7 @@ jQuery(function ($) {
                 } else if (!$.isNumeric(count)) {
                     count = '0'
                 }
-                mi._removeItemfromCart(this, item, count);
+                mi._removeItemFromCart(this, item, count);
                 mi._updateCartDetails();
             });
 
@@ -210,13 +240,14 @@ jQuery(function ($) {
             }
         }
 
-        _removeItemfromCart(input, item, count) {
+        _removeItemFromCart(input, item, count) {
             for (let i in this.cart) {
                 if (this.cart[i].name === item.name && this.cart[i].date === item.date) {
                     this.cart[i].count = count;
                     if (count === '0') {
                         this.cart.splice(i, 1);
                         $(input).parents('tr').remove();
+                        this._markAddItemButton();
 
                         if ($(this.tbody_item_cart).find("tr").length === 0) {
                             this.row_col_table_item_cart.hide();
