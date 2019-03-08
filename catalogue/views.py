@@ -3,15 +3,12 @@ import itertools
 import json
 
 from django.conf import settings
-from django.shortcuts import render
 from django.views.generic import ListView, DetailView
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
 
 from catalogue.models import Meeting, Place
 from swingtime.models import EventType
 
-from django.db.models import Q, F, Count
+from django.db.models import Q, Count
 
 
 class IndexView(ListView):

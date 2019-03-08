@@ -82,18 +82,20 @@
                                     </th>
                                     {% for o in occurrences %}
                                         <td>
-                                            {{ o|date:"l j F" }}
+                                            {{ o|date:"l d F" }}
                                         </td>
                                         <td>{{ o|date:"H:i" }}</td>
                                         <td>{{ object.place.space_available }}</td>
                                         <td class="text-center">
-                                            <button class="sc-add-to-cart btn btn-warning"
-                                                    data-name="{{ object.title }}"
-                                                    data-id="{{ object.id }}"
-                                                    data-date="{{ o|date:"l j F H:i" }}"
+                                            <a tabindex="0"
+                                               class="sc-add-to-cart btn btn-warning"
+                                               data-name="{{ object.title }}"
+                                               data-id="{{ object.id }}"
+                                               data-date="{{ o|date:"l d F H:i" }}"
+                                               href="#"
                                             >
                                                 Réserver
-                                            </button>
+                                            </a>
                                         </td>
                                         </tr>
                                         {% if not forloop.last %}

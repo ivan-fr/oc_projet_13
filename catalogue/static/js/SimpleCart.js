@@ -15,7 +15,6 @@ jQuery(function ($) {
         }
     }
 
-    /*Constructor function*/
     class SimpleCart {
 
         constructor(domEle, options = {}) {
@@ -35,6 +34,7 @@ jQuery(function ($) {
             this.tbody_item_cart = $('<tbody></tbody>');
 
             let table_item_cart = $('<table></table>').addClass('table table-bordered mb-0')
+                .prepend($('<caption></caption>').text('Votre panier'))
                 .append(
                     $('<thead></thead>').html(
                         '<tr>\n' +
@@ -58,7 +58,7 @@ jQuery(function ($) {
 
         _markAddItemButton() {
 
-            $('button[class*="sc-add-to-cart"][data-id][data-date]')
+            $('a[class*="sc-add-to-cart"][data-id][data-date]')
                 .removeClass('btn-warning')
                 .removeClass('btn-primary')
                 .addClass('btn-warning')
@@ -69,7 +69,7 @@ jQuery(function ($) {
 
             for (let i in this.cart) {
                 if (this.cart.hasOwnProperty(i)) {
-                    $('button[class*="sc-add-to-cart"][data-id="' + this.cart[i].id + '"][data-date="' + this.cart[i].date + '"]')
+                    $('a[class*="sc-add-to-cart"][data-id="' + this.cart[i].id + '"][data-date="' + this.cart[i].date + '"]')
                         .removeClass('btn-warning').addClass('btn-primary');
                 }
             }
@@ -141,7 +141,7 @@ jQuery(function ($) {
                 if ($(button).data("popover") === false) {
                     console.log('koko');
                     $(button).popover({
-                        content: 'Vous avez dépassé le nombre d\'événement par panier.',
+                        content: 'Vous avez dépassé le nombre d\'événements par panier.',
                         trigger: 'focus'
                     });
                     $(button).popover('show');

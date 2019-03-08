@@ -38,10 +38,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'debug_toolbar',
-    'swingtime',
     'treebeard',
+    'widget_tweaks',
+    'swingtime',
     'catalogue.apps.CatalogueConfig',
-    'ventes.apps.VentesConfig'
+    'ventes.apps.VentesConfig',
+    'session.apps.SessionConfig'
 ]
 
 MIDDLEWARE = [
@@ -130,3 +132,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'oc_projet_13', 'uploads')
 
 DEPARTMENTS_FILE = os.path.join(BASE_DIR, "catalogue", "static",
                                 "departments.json")
+
+LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = '/session/login/'

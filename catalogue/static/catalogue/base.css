@@ -54,3 +54,7 @@
 .color-yellow {
     background: #ffeeba;
 }
+
+caption {
+    caption-side: top;
+}
