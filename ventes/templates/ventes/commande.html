@@ -1,0 +1,36 @@
+{% extends 'oc_projet_13/base.html' %}
+
+{% block body %}
+    <section id="signup">
+        <div class="row mt-4">
+            <div class="col-lg-8 mx-auto">
+                <div class="card border-secondary">
+                    <div class="card-header">Passer commande</div>
+                    <div class="card-body"
+                         id="formset_commande_container"
+                         data-commande-formset-url="{% url 'ventes:commande-formset' %}">
+                        <div class="spinner-grow" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        jQuery(function ($) {
+            simple_cart = $('#total-cart-count').data('simpleCart');
+            simple_cart._disableEvents();
+            let card_body = $('#formset_commande_container');
+            params = {
+                'initial_formset_commande': JSON.stringify(simple_cart.cart)
+            };
+            $.get(card_body.attr("data-commande-formset-url"), $.param(params), function (data, status) {
+                card_body.html(data);
+            });
+        });
+    </script>
+{% endblock %}

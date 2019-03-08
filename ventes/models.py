@@ -20,7 +20,7 @@ class CommandeMeeting(models.Model):
                                    related_name="to_meeting")
     quantity = models.PositiveIntegerField(validators=[MinValueValidator(1),
                                                        MaxValueValidator(9)])
-    date_meeting = models.DateField()
+    date_meeting = models.DateTimeField()
 
     class Meta:
         unique_together = (('from_commande', 'to_meeting'),)

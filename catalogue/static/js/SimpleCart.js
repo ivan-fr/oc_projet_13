@@ -28,10 +28,9 @@ jQuery(function ($) {
             //Initial init function
             this._loadCart();
             this._markAddItemButton();
-            this._updateCartDetails();
             this._setEvents();
-
             this.tbody_item_cart = $('<tbody></tbody>');
+            this._updateCartDetails();
 
             let table_item_cart = $('<table></table>').addClass('table table-bordered mb-0')
                 .prepend($('<caption></caption>').text('Votre panier'))
@@ -46,8 +45,9 @@ jQuery(function ($) {
                 ).append(
                     this.tbody_item_cart
                 ).append(
-                    $('<tbody></tbody>').html(
-                        '<th class="text-center" colspan="4"><buttton class="btn btn-warning">Valider le panier</buttton></th>'
+                    $('<tfoot></tfoot>').html(
+                        '<th class="text-center" colspan="4"><a href="' + this.cart_ele.attr('data-url-submit-button') + '" class="btn btn-warning">' +
+                        'Valider mon panier</a></th>'
                     )
                 );
 
@@ -62,7 +62,7 @@ jQuery(function ($) {
                 .removeClass('btn-warning')
                 .removeClass('btn-primary')
                 .addClass('btn-warning')
-                .each(function (index) {
+                .each(function () {
                     $(this).popover('dispose');
                     $(this).data('popover', false);
                 });
@@ -73,6 +73,11 @@ jQuery(function ($) {
                         .removeClass('btn-warning').addClass('btn-primary');
                 }
             }
+        }
+
+        _disableEvents() {
+            $(this.options.addtoCartClass).off();
+            this.cart_ele.parent().off();
         }
 
         _setEvents() {
@@ -109,6 +114,7 @@ jQuery(function ($) {
                     mi.row_col_table_item_cart.hide();
                 } else {
                     mi.showTableItem();
+                    mi._updateCartDetails();
                 }
             })
         }
@@ -116,6 +122,11 @@ jQuery(function ($) {
         _updateCartDetails() {
             let mi = this;
             $(this.cart_ele).text(mi._totalCartCount());
+            $(this.tbody_item_cart).find("td.counter").each(
+                function (index) {
+                    $(this).text(index + 1);
+                }
+            )
         }
 
         /* Helper Functions */
@@ -139,7 +150,6 @@ jQuery(function ($) {
                 this._markAddItemButton();
             } else {
                 if ($(button).data("popover") === false) {
-                    console.log('koko');
                     $(button).popover({
                         content: 'Vous avez dépassé le nombre d\'événements par panier.',
                         trigger: 'focus'
@@ -212,11 +222,11 @@ jQuery(function ($) {
             });
 
             let tr_tbody_item_cart = $('<tr></tr>').html(
-                '<td>' + ($(this.tbody_item_cart).find("tr").length + 1) + '</td>\n' +
+                '<td class="counter"></td>\n' +
                 '      <td>' + item.name + '</td>\n' +
                 '      <td>' + item.date + '</td>');
 
-            this.tbody_item_cart.prepend(tr_tbody_item_cart);
+            this.tbody_item_cart.append(tr_tbody_item_cart);
 
             tr_tbody_item_cart.append(
                 $('<td></td>').append(
@@ -278,8 +288,6 @@ jQuery(function ($) {
 
     /* Defining the Structure of the plugin 'simpleCart'*/
     $.fn.simpleCart = function () {
-        return this.each(function () {
-            $(this).data("simpleCart", new SimpleCart(this));
-        });
+        return this.data("simpleCart", new SimpleCart(this));
     };
 });

@@ -70,7 +70,7 @@
             {% endif %}
             <li class="nav-item">
                 <a class="nav-link" href="#">
-                    <span class="badge badge-info" id="total-cart-count"></span>
+                    <span class="badge badge-info" id="total-cart-count" data-url-submit-button="{% url 'ventes:commande' %}"></span>
                     Panier
                 </a>
             </li>
@@ -95,7 +95,7 @@
 <script src="{% static 'js/SimpleCart.js' %}"></script>
 
 <script>
-    $(document).ready(function () {
+    jQuery(document).ready(function ($) {
         $('#total-cart-count').simpleCart();
     });
 </script>

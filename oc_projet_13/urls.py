@@ -26,6 +26,7 @@ urlpatterns = [
     path('', views.IndexView.as_view(),
          {'department_code': '75'}, name='index'),
     path('session/', include('session.urls')),
+    path('ventes/', include('ventes.urls'))
 ]
 
 if settings.DEBUG:
