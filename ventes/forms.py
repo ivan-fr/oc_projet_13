@@ -2,6 +2,7 @@ from django import forms
 from catalogue.models import Meeting
 from django.utils import timezone
 from django.db.models import F, Sum, Q
+from django.db.models.functions import Coalesce
 
 
 class CommandeForm(forms.Form):
@@ -19,10 +20,10 @@ class CommandeForm(forms.Form):
         try:
             meeting = Meeting.objects.filter(pk=id) \
                 .annotate(
-                nombre_de_place_reserve=Sum(
+                nombre_de_place_reserve=Coalesce(Sum(
                     F('to_meeting__quantity'),
                     filter=Q(to_meeting__date_meeting=self.cleaned_data['date'])
-                )
+                ), 0)
             ).annotate(
                 place_restante=F('place__space_available')
                                - F('nombre_de_place_reserve')

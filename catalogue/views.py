@@ -4,11 +4,13 @@ import json
 
 from django.conf import settings
 from django.views.generic import ListView, DetailView
+from django.utils import timezone
 
 from catalogue.models import Meeting, Place
 from swingtime.models import EventType
 
-from django.db.models import Q, Count
+from django.db.models import Q, F, Count, Sum
+from django.db.models.functions import Coalesce
 
 
 class IndexView(ListView):
@@ -96,9 +98,6 @@ class MeetingView(DetailView):
 
         occurrences = getattr(self.object.recurrences, 'occurrences', None)
 
-        def group_key(o):
-            return datetime(year, o.month, 1)
-
         _dict = {
             'root_events_types': EventType.get_root_nodes(),
             'breadcrumb': [{'label': _event_type.label, 'pk': _event_type.pk}
@@ -109,9 +108,52 @@ class MeetingView(DetailView):
         }
 
         if occurrences:
-            _dict['by_month'] = [(dt, list(o)) for dt, o in
-                                 itertools.groupby(occurrences(), group_key) if
-                                 occurrences]
+            def group_key(o):
+                return datetime(year, o.month, 1)
+
+            annotate_space_reserved = {
+                'nb_space_reverved_' + str(i): Coalesce(Sum(
+                    F('to_meeting__quantity'),
+                    filter=Q(
+                        to_meeting__date_meeting=timezone.make_aware(
+                            v.replace(second=0)
+                        )
+                    )
+                ), 0)
+                for i, v in enumerate(occurrences())
+            }
+
+            annotate_space_residue = {
+                'nb_space_residue_' + key[-1]: F('place__space_available')
+                                               - F(key)
+                for key in annotate_space_reserved.keys()
+            }
+
+            space_available = Meeting.objects.filter(pk=self.object.pk) \
+                .annotate(**annotate_space_reserved) \
+                .annotate(**annotate_space_residue) \
+                .first()
+
+            _list, start, end = [], 0, 0
+            for dt, _o in itertools.groupby(occurrences(), group_key):
+                o = list(_o)
+                end += len(o)
+                _list.append((dt,
+                              list(
+                                  zip(
+                                      list(
+                                          o
+                                      ),
+                                      list(
+                                          annotate_space_residue.keys()
+                                      )[start:end]
+                                  )
+                              ))
+                             )
+                start = end
+
+            _dict['by_month'] = _list
+            _dict['space_available'] = space_available
 
         context = self.get_context_data(**_dict)
         return self.render_to_response(context)
