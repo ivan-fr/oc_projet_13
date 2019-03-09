@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 
 class Commande(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    date = models.DateField(auto_now_add=True)
+    date = models.DateTimeField(auto_now_add=True)
     meetings = models.ManyToManyField(Meeting,
                                       through='CommandeMeeting',
                                       through_fields=('from_commande',
@@ -23,4 +23,4 @@ class CommandeMeeting(models.Model):
     date_meeting = models.DateTimeField()
 
     class Meta:
-        unique_together = (('from_commande', 'to_meeting'),)
+        unique_together = (('from_commande', 'to_meeting', 'date_meeting'),)

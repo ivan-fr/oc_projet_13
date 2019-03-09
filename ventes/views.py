@@ -1,11 +1,16 @@
 import json
-from extra_views import FormSetView
-from ventes.forms import CommandeForm
+
 from django.views.generic import TemplateView
 from django.http import Http404
 from django.core import signing
+from django.db import transaction
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
 from catalogue.models import Meeting
+from ventes.models import Commande, CommandeMeeting
+from extra_views import FormSetView
+from ventes.forms import CommandeForm
 
 
 class CommandeView(FormSetView):
@@ -33,9 +38,39 @@ class CommandeView(FormSetView):
         else:
             raise Http404("Request have to be ajax.")
 
+    @method_decorator(login_required)
     def post(self, request, *args, **kwargs):
         self.initial = signing.loads(request.POST.get('form-sign'))
         return super(CommandeView, self).post(request, *args, **kwargs)
+
+    def formset_valid(self, formset):
+        data = {}
+        for cleaned_data in formset.cleaned_data:
+            try:
+                data[cleaned_data['id']] \
+                    .append(
+                    {'date_meeting': cleaned_data['date'],
+                     'quantity': cleaned_data['count']})
+            except KeyError:
+                data[cleaned_data['id']] = [{
+                    'date_meeting': cleaned_data['date'],
+                    'quantity': cleaned_data['count']
+                }]
+
+        with transaction.atomic():
+            commande = Commande.objects.create(
+                user=self.request.user
+            )
+
+            for key, dicts in data.items():
+                CommandeMeeting.objects.bulk_create(
+                    [CommandeMeeting(
+                        from_commande=commande,
+                        to_meeting=Meeting.objects.get(pk=key), **_dict)
+                        for _dict in dicts]
+                )
+
+        return super(CommandeView, self).formset_valid(formset)
 
 
 class CommandeTemplateView(TemplateView):
