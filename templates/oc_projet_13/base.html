@@ -52,6 +52,11 @@
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'ventes:commandes' %}">
+                        Commandes
+                    </a>
+                </li>
             {% else %}
                 <li class="nav-item">
                     <a class="nav-link"
@@ -70,7 +75,8 @@
             {% endif %}
             <li class="nav-item">
                 <a class="nav-link" href="#">
-                    <span class="badge badge-info" id="total-cart-count" data-url-submit-button="{% url 'ventes:commande' %}"></span>
+                    <span class="badge badge-info" id="total-cart-count"
+                          data-url-submit-button="{% url 'ventes:commande' %}"></span>
                     Panier
                 </a>
             </li>

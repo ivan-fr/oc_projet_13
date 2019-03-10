@@ -1,0 +1,26 @@
+{% extends "ventes/commandes_layout.html" %}
+
+{% block class_current_week %}
+active
+{% endblock %}
+
+{% block layout %}
+
+    {% if previous_week %}
+        <a class="badge badge-primary"
+           href="{% url 'ventes:commandes-week' previous_week|date:"Y" previous_week|date:"W"|add:-1 %}">
+            < {{ previous_week|date:"W"|add:-1 }} of
+            year {{ previous_week|date:"Y" }}</a>
+    {% endif %}
+    {% if next_week %}
+        <a class="badge badge-primary"
+           href="{% url 'ventes:commandes-week' next_week|date:"Y" next_week|date:"W"|add:-1 %}">
+            {{ next_week|date:"W"|add:-1 }} of year {{ next_week|date:"Y" }} ></a>
+    {% endif %}
+
+    <ul class="list-group">
+        {% for object in object_list %}
+            {% include 'ventes/patron_commande.html' with object=object %}
+        {% endfor %}
+    </ul>
+{% endblock %}

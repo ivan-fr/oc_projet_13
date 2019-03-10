@@ -1,0 +1,21 @@
+{% extends "ventes/commandes_layout.html" %}
+
+{% block layout %}
+    {% for object in latest %}
+        {% include 'ventes/patron_commande.html' with object=object %}
+    {% endfor %}
+
+    <div class="card mt-3" style="width: 18rem">
+        <div class="card-header">
+            Archive
+        </div>
+        <ul class="list-group list-group-flush">
+            {% for date in date_list %}
+                <li class="list-group-item">
+                    <a href="{% url 'ventes:commandes-year' date|date:'Y' %}">{{ date|date:"Y" }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+{% endblock %}

@@ -42,3 +42,5 @@ class CommandeForm(forms.Form):
                 raise forms.ValidationError("Mauvaise occurrence.")
         except Meeting.DoesNotExist:
             raise forms.ValidationError("L'événement n'existe pas.")
+
+        return super(CommandeForm, self).clean()

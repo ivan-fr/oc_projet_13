@@ -1,0 +1,18 @@
+{% load catalogue_tags %}
+
+<div class="card border-danger mt-3">
+    <div class="card-header">{{ object.date|date:"l d F H:i"|capfirst }}</div>
+    <div class="card-body">
+        <ul>
+            {% for through in object.from_commande.all %}
+                <li>{{ through.quantity }}X
+                    <u>{{ through.to_meeting.title }}</u>
+                    le {{ through.date_meeting|date:"d/m/Y H:i" }}
+                    - {% multiply through.quantity through.to_meeting.price %}
+                    <i class="fas fa-euro-sign"></i></li>
+            {% endfor %}
+        </ul>
+        Montant total : {{ object.total_price }} <i
+            class="fas fa-euro-sign"></i>
+    </div>
+</div>

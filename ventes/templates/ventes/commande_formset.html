@@ -5,13 +5,12 @@
       id="formset_commande">
     {% csrf_token %}
     {{ formset.management_form }}
-    {% if formset.errors %}
-        {{ formset.errors }}
-    {% endif %}
-
     <input type="hidden" name="form-sign" value="{{ sign }}"
            id="form-sign">
     {% for form in formset %}
+        {% if form.errors %}
+            {{ form.errors }}
+        {% endif %}
         {{ form.id.as_hidden }}
         <div class="form-row">
             <div class="form-group col-md-4">

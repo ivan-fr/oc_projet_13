@@ -1,11 +1,14 @@
 import json
 
+from django.views.generic.dates import ArchiveIndexView, MonthArchiveView, \
+    YearArchiveView, WeekArchiveView
 from django.views.generic import TemplateView
 from django.http import Http404
 from django.core import signing
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from django.db.models import Q, F, Sum, FloatField
 
 from catalogue.models import Meeting
 from ventes.models import Commande, CommandeMeeting
@@ -75,3 +78,35 @@ class CommandeView(FormSetView):
 
 class CommandeTemplateView(TemplateView):
     template_name = 'ventes/commande.html'
+
+
+class CommandeMixinView(object):
+    model = Commande
+    date_field = 'date'
+    paginate_by = 10
+    make_object_list = True
+    allow_empty = True
+
+    def get_queryset(self):
+        queryset = super(CommandeMixinView, self).get_queryset()
+        return queryset.filter(user=self.request.user) \
+            .prefetch_related("from_commande", 'from_commande__to_meeting') \
+            .annotate(total_price=Sum(F('from_commande__quantity')
+                                      * F('from_commande__to_meeting__price'),
+                                      output_field=FloatField()))
+
+
+class CommandeArchiveView(CommandeMixinView, ArchiveIndexView):
+    pass
+
+
+class CommandeYearArchiveView(CommandeMixinView, YearArchiveView):
+    pass
+
+
+class CommandeMonthArchiveView(CommandeMixinView, MonthArchiveView):
+    month_format = "%m"
+
+
+class CommandeWeekArchiveView(CommandeMixinView, WeekArchiveView):
+    week_format = "%W"

@@ -1,0 +1,28 @@
+{% extends "ventes/commandes_layout.html" %}
+
+{% block class_current_mouth %}
+active
+{% endblock %}
+
+{% block layout %}
+
+    {% if previous_month %}
+        <a class="badge badge-primary"
+           href="{% url 'ventes:commandes-month' previous_month|date:"Y" previous_month|date:"m" %}">
+            < {{ previous_month|date:"Y F" }}</a>
+    {% endif %}
+    {% if next_month %}
+        <a class="badge badge-primary"
+           href="{% url 'ventes:commandes-month' next_month|date:"Y" next_month|date:"m" %}">
+            {{ next_month|date:"Y F" }} ></a>
+    {% endif %}
+
+    <ul class="list-group">
+
+        {% for object in object_list %}
+            {% include 'ventes/patron_commande.html' with object=object %}
+        {% endfor %}
+
+    </ul>
+
+{% endblock %}
