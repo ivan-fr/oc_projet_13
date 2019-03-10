@@ -1,5 +1,9 @@
 {% extends "ventes/commandes_layout.html" %}
 
+{% block class_archive %}
+active
+{% endblock %}
+
 {% block layout %}
     {% for object in latest %}
         {% include 'ventes/patron_commande.html' with object=object %}

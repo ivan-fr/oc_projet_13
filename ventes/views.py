@@ -106,7 +106,3 @@ class CommandeYearArchiveView(CommandeMixinView, YearArchiveView):
 
 class CommandeMonthArchiveView(CommandeMixinView, MonthArchiveView):
     month_format = "%m"
-
-
-class CommandeWeekArchiveView(CommandeMixinView, WeekArchiveView):
-    week_format = "%W"

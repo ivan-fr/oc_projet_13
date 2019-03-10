@@ -214,6 +214,10 @@ jQuery(function ($) {
                 if (count > 9) {
                     $(this).val(9);
                     count = 9
+                }
+                else if (count <= 0) {
+                    $(this).val(0);
+                    count = '0'
                 } else if (!$.isNumeric(count)) {
                     count = '0'
                 }

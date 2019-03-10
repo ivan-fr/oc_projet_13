@@ -15,9 +15,6 @@ commandes_patterns = [
         login_required(views.CommandeYearArchiveView.as_view()),
         name="commandes-year"
     ),
-    path('<int:year>/week/<int:week>/',
-         login_required(views.CommandeWeekArchiveView.as_view()),
-         name="commandes-week"),
     path(
         '',
         login_required(views.CommandeArchiveView.as_view()),

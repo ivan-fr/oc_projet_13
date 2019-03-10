@@ -3,7 +3,6 @@
 
     {% now "Y" as current_year %}
     {% now "m" as current_mouth %}
-    {% now "W" as current_week %}
 
     <div class="row mt-4">
         <div class="col-10 mx-auto">
@@ -12,19 +11,21 @@
                 <div class="card-body">
                     <ul class="nav nav-pills justify-content-center">
                         <li class="nav-item">
-                            <a class="nav-link {% block class_current_year %}{% endblock %}"
+                            <a class="nav-link
+                                    {% block class_archive %}{% endblock %}"
+                               href="{% url 'ventes:commandes' %}">Tout</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link
+                                    {% block class_current_year %}{% endblock %}"
                                href="{% url 'ventes:commandes-year' current_year %}">Cette
                                 Année</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% block class_current_mouth %}{% endblock %}"
+                            <a class="nav-link
+                                    {% block class_current_mouth %}{% endblock %}"
                                href="{% url 'ventes:commandes-month' current_year current_mouth %}">
                                 Ce Moi-ci</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% block class_current_week %}{% endblock %}"
-                               href="{% url 'ventes:commandes-week' current_year current_week|add:-1 %}">
-                                Cette Semaine</a>
                         </li>
                     </ul>
 
