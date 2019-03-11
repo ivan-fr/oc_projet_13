@@ -1,14 +1,19 @@
+import qrcode
 import json
 
+from io import BytesIO
+
 from django.views.generic.dates import ArchiveIndexView, MonthArchiveView, \
-    YearArchiveView, WeekArchiveView
+    YearArchiveView
 from django.views.generic import TemplateView
 from django.http import Http404
 from django.core import signing
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from django.db.models import Q, F, Sum, FloatField
+from django.db.models import F, Sum, FloatField
+from django.core.signing import Signer
+from django.core.files import File
 
 from catalogue.models import Meeting
 from ventes.models import Commande, CommandeMeeting
@@ -47,6 +52,7 @@ class CommandeView(FormSetView):
         return super(CommandeView, self).post(request, *args, **kwargs)
 
     def formset_valid(self, formset):
+        signer = Signer()
         data = {}
         for cleaned_data in formset.cleaned_data:
             try:
@@ -66,12 +72,30 @@ class CommandeView(FormSetView):
             )
 
             for key, dicts in data.items():
-                CommandeMeeting.objects.bulk_create(
-                    [CommandeMeeting(
+                commandes_meetings = []
+                meeting = Meeting.objects.get(pk=key)
+                i = 0
+                for _dict in dicts:
+                    blob = BytesIO()
+                    qrcode_img = qrcode.make(
+                        signer.sign(
+                            str(_dict['quantity'])
+                            + '-'
+                            + str(_dict['date_meeting'])
+                        )
+                    )
+                    qrcode_img.save(blob, 'JPEG')
+                    commandes_meetings.append(CommandeMeeting(
                         from_commande=commande,
-                        to_meeting=Meeting.objects.get(pk=key), **_dict)
-                        for _dict in dicts]
-                )
+                        to_meeting=meeting,
+                        **_dict))
+                    commandes_meetings[i].qrcode.save(
+                        str(hash(commande.date))
+                        + '.jpg', File(blob),
+                        save=False)
+                    i += 1
+
+                CommandeMeeting.objects.bulk_create(commandes_meetings)
 
         return super(CommandeView, self).formset_valid(formset)
 

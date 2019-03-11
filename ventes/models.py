@@ -21,6 +21,8 @@ class CommandeMeeting(models.Model):
     quantity = models.PositiveIntegerField(validators=[MinValueValidator(1),
                                                        MaxValueValidator(9)])
     date_meeting = models.DateTimeField()
+    qrcode = models.ImageField(upload_to='qrcode/%Y/%m/%d/', null=True,
+                               blank=True)
 
     class Meta:
         unique_together = (('from_commande', 'to_meeting', 'date_meeting'),)
