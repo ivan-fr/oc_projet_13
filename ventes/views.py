@@ -2,11 +2,11 @@ import qrcode
 import json
 
 from io import BytesIO
+import urllib.parse
 
 from django.views.generic.dates import ArchiveIndexView, MonthArchiveView, \
     YearArchiveView
-from django.views.generic import TemplateView
-from django.http import Http404
+from django.views.generic import TemplateView, DetailView
 from django.core import signing
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
@@ -14,6 +14,8 @@ from django.utils.decorators import method_decorator
 from django.db.models import F, Sum, FloatField
 from django.core.signing import Signer
 from django.core.files import File
+from django.http import Http404
+from django.urls import reverse
 
 from catalogue.models import Meeting
 from ventes.models import Commande, CommandeMeeting
@@ -97,6 +99,15 @@ class CommandeView(FormSetView):
 
                 CommandeMeeting.objects.bulk_create(commandes_meetings)
 
+        self.success_url = reverse(
+            'ventes:show-commande',
+            kwargs={
+                'commande_pk': commande.pk,
+            }
+        ) + '?' + urllib.parse.urlencode({
+            'from_accepted_command': True
+        })
+
         return super(CommandeView, self).formset_valid(formset)
 
 
@@ -130,3 +141,32 @@ class CommandeYearArchiveView(CommandeMixinView, YearArchiveView):
 
 class CommandeMonthArchiveView(CommandeMixinView, MonthArchiveView):
     month_format = "%m"
+
+
+class CommadeView(DetailView):
+    model = Commande
+    pk_url_kwarg = 'commande_pk'
+
+    def get_queryset(self):
+        queryset = super(CommadeView, self).get_queryset()
+        queryset = queryset.prefetch_related("from_commande",
+                                             'from_commande__to_meeting') \
+            .annotate(total_price=Sum(F('from_commande__quantity')
+                                      * F('from_commande__to_meeting__price'),
+                                      output_field=FloatField()))
+        return queryset
+
+    def get_object(self, queryset=None):
+        obj = super(CommadeView, self).get_object(queryset)
+        if not self.request.user == obj.user:
+            raise Http404('Page inconnue.')
+        return obj
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        context = self.get_context_data(
+            object=self.object,
+            from_accepted_command=request.GET.get('from_accepted_command',
+                                                  False)
+        )
+        return self.render_to_response(context)

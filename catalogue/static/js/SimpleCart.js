@@ -204,7 +204,7 @@ jQuery(function ($) {
                 max: 9,
                 value: item.count,
                 data_for_selector: item.id + item.date,
-                class: 'form-control'
+                class: 'form-control input_count'
             });
 
             input_count.on('change', function (e) {
@@ -214,8 +214,7 @@ jQuery(function ($) {
                 if (count > 9) {
                     $(this).val(9);
                     count = 9
-                }
-                else if (count <= 0) {
+                } else if (count <= 0) {
                     $(this).val(0);
                     count = '0'
                 } else if (!$.isNumeric(count)) {
@@ -254,13 +253,13 @@ jQuery(function ($) {
             }
         }
 
-        _removeItemFromCart(input, item, count) {
+        _removeItemFromCart(input_count, item, count) {
             for (let i in this.cart) {
                 if (this.cart[i].name === item.name && this.cart[i].date === item.date) {
                     this.cart[i].count = count;
                     if (count === '0') {
                         this.cart.splice(i, 1);
-                        $(input).parents('tr').remove();
+                        $(input_count).parents('tr').remove();
                         this._markAddItemButton();
 
                         if ($(this.tbody_item_cart).find("tr").length === 0) {
@@ -287,6 +286,14 @@ jQuery(function ($) {
             if (this.cart === null) {
                 this.cart = [];
             }
+        }
+
+        _clearCart() {
+            this.cart = [];
+            this._saveCart();
+            this.tbody_item_cart.html('');
+            this.row_col_table_item_cart.hide();
+            this.cart_ele.parent().removeClass('active');
         }
     }
 

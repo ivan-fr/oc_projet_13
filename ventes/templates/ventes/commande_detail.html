@@ -1,0 +1,52 @@
+{% extends 'oc_projet_13/base.html' %}
+{% load catalogue_tags %}
+
+
+{% block body %}
+    <div class="card border-danger mt-4" id="commande">
+        <div class="card-header">
+            <div class="d-flex bd-highlight mb-0">
+                <div class="mr-auto bd-highlight">Votre commande
+                    du {{ object.date|date:"l d F H:i"|capfirst }}</div>
+                <div class="bd-highlight">
+                    <button class="printme"><i
+                            class="fas fa-print"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <ul class="list-group">
+                {% for through in object.from_commande.all %}
+                    <li class="list-group-item">{{ through.quantity }}X
+                        <u>{{ through.to_meeting.title }}</u>
+                        le {{ through.date_meeting|date:"d/m/Y H:i" }}
+                        - {% multiply through.quantity through.to_meeting.price %}
+                        <i class="fas fa-euro-sign"></i>
+                    </li>
+                    <li class="list-group-item list-group-item-info">
+                        <img src="{{ through.qrcode.url }}" width="200px"
+                             height="200px" alt="qrcode">
+                    </li>
+                {% endfor %}
+            </ul>
+            <div class="mt-3">Montant total : {{ object.total_price }} <i
+                    class="fas fa-euro-sign"></i></div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        jQuery(function ($) {
+            {% if from_accepted_command %}
+                simple_cart = $('#total-cart-count').data('simpleCart');
+                simple_cart._clearCart();
+            {% endif %}
+
+            $('#commande .printme').click(function () {
+                window.print();
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.contrib.auth.decorators import login_required
 from ventes import views
 
@@ -27,5 +27,7 @@ urlpatterns = [
          name='commande-formset'),
     path('commande/', login_required(views.CommandeTemplateView.as_view()),
          name='commande'),
+    re_path(r'^commande/(?P<commande_pk>[\d]+)/$',
+            views.CommadeView.as_view(), name='show-commande'),
     path('commandes/', include(commandes_patterns)),
 ]

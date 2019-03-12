@@ -1,7 +1,16 @@
 {% load catalogue_tags %}
 
 <div class="card border-danger mt-3">
-    <div class="card-header">{{ object.date|date:"l d F H:i"|capfirst }}</div>
+    <div class="card-header">
+        <div class="d-flex bd-highlight mb-0">
+            <div class="mr-auto bd-highlight">{{ object.date|date:"l d F H:i"|capfirst }}</div>
+            <div class="bd-highlight"><a
+                    href="{% url 'ventes:show-commande' object.pk %}"
+                    class="btn btn-success">Voir
+                le billet</a></div>
+        </div>
+    </div>
+
     <div class="card-body">
         <ul>
             {% for through in object.from_commande.all %}
