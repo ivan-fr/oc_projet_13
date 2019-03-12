@@ -118,7 +118,7 @@ class CommandeTemplateView(TemplateView):
 class CommandeMixinView(object):
     model = Commande
     date_field = 'date'
-    paginate_by = 10
+    paginate_by = 4
     make_object_list = True
     allow_empty = True
 

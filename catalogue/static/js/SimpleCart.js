@@ -294,6 +294,7 @@ jQuery(function ($) {
             this.tbody_item_cart.html('');
             this.row_col_table_item_cart.hide();
             this.cart_ele.parent().removeClass('active');
+            this._updateCartDetails();
         }
     }
 
