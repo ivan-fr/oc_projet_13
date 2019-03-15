@@ -55,10 +55,16 @@
                             <p>{{ note }}</p>
                         {% endif %}
                     {% endfor %}
-                    <b>Metteur en scène
-                        :</b> {{ object.directors.all|join:", " }} <br>
-                    <b>Auteur :</b> {{ object.authors.all|join:", " }} <br>
-                    <b>Artistes :</b> {{ object.artists.all|join:", " }}
+                    {% if object.directors.all %}
+                        <b>Metteur en scène
+                            :</b> {{ object.directors.all|join:", " }} <br>
+                    {% endif %}
+                    {% if object.authors.all %}
+                        <b>Auteur :</b> {{ object.authors.all|join:", " }} <br>
+                    {% endif %}
+                    {% if object.artists.all %}
+                        <b>Artistes :</b> {{ object.artists.all|join:", " }}
+                    {% endif %}
 
                 </div>
                 <div class="tab-pane fade" id="pills-date-tarifs"
