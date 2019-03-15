@@ -30,7 +30,7 @@
                     </li>
                 {% endfor %}
             </ul>
-            <div class="mt-3">Montant total : {{ object.total_price }} <i
+            <div class="mt-3">Montant total : {{ object.total_price|twodigitcomma }} <i
                     class="fas fa-euro-sign"></i></div>
         </div>
     </div>

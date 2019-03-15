@@ -81,9 +81,9 @@ class CommandeView(FormSetView):
                     blob = BytesIO()
                     qrcode_img = qrcode.make(
                         signer.sign(
-                            commande.pk + '-' +
-                            str(key) + '-' +
-                            str(_dict['quantity']) + '-'
+                            str(commande.pk) + '/' +
+                            str(key) + '/' +
+                            str(_dict['quantity']) + '/'
                             + str(_dict['date_meeting'])
                         )
                     )
