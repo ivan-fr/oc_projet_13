@@ -16,4 +16,4 @@ def get_dict_attr(dict, attr):
 @register.simple_tag()
 def multiply(x1, x2):
     # you would need to do any localization of the result here
-    return float(x1) * float(x2)
+    return "%.2f" % (float(x1) * float(x2))

@@ -54,7 +54,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'ventes:commandes' %}">
-                        Commandes
+                        Mes Commandes
                     </a>
                 </li>
             {% else %}
@@ -87,6 +87,24 @@
 <div class="container">
     {% block body %}
     {% endblock %}
+
+    <hr class="mb-0">
+    <div class="row mx-0 px-4 pt-3 background-grey">
+        <div class="col-3">
+            <h6 class="text-uppercase">Réseaux sociaux</h6>
+            <a href="https://github.com/ivan-fr/oc_projet_13"
+               target="_blank">
+                <i class="fab fa-github"></i>
+                Lien github
+            </a>
+        </div>
+    </div>
+
+    <div class="row mx-0 px-4 pb-3 background-grey">
+        <div class="col-8">
+            {% now 'Y' %} © Tous droits réservés.
+        </div>
+    </div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"

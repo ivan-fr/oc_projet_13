@@ -64,48 +64,57 @@
                 <div class="tab-pane fade" id="pills-date-tarifs"
                      role="tabpanel"
                      aria-labelledby="pills-date-tarifs-tab">
-                    {% if by_month %}
-                        <table class="table table-bordered mb-0">
-                            <thead>
-                            <tr>
-                                <th>Mois</th>
-                                <th>Jour</th>
-                                <th>Debut</th>
-                                <th>Places restantes</th>
-                                <th></th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% for dt, occurrences in by_month %}
-                                <tr class="month-divider">
-                                    <th rowspan="{{ occurrences|length }}">
-                                        {{ dt|date:"F" }}
-                                    </th>
-                                    {% for o, key_space_residue in occurrences %}
-                                        <td>
-                                            {{ o|date:"l d F" }}
-                                        </td>
-                                        <td>{{ o|date:"H:i" }}</td>
-                                        <td>{{ space_available|get_obj_attr:key_space_residue }}</td>
-                                        <td class="text-center">
-                                            <a tabindex="0"
-                                               class="sc-add-to-cart btn btn-warning"
-                                               data-name="{{ object.title }}"
-                                               data-id="{{ object.id }}"
-                                               data-date="{{ o|date:"d/m/Y H:i" }}"
-                                               href="#"
-                                            >
-                                                Réserver
-                                            </a>
-                                        </td>
-                                        </tr>
-                                        {% if not forloop.last %}
-                                            <tr>
-                                        {% endif %}
-                                    {% endfor %}
-                            {% endfor %}
-                            </tbody>
-                        </table>
+                    {% if calendars %}
+                        {% for month, calendar in calendars.items %}
+                            <table class="table table-bordered reservation">
+                                <caption>{{ month|date:"F"|capfirst }}</caption>
+                                <thead>
+                                <tr>
+                                    <th>Lundi</th>
+                                    <th>Mardi</th>
+                                    <th>Mercredi</th>
+                                    <th>Jeudi</th>
+                                    <th>Vendredi</th>
+                                    <th>Samedi</th>
+                                    <th>Dimanche</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for row in calendar %}
+                                    <tr>
+                                        {% for day, items in row %}
+                                            <td>
+                                                {% if day %}
+                                                    <div class="day-ordinal">
+                                                        {{ day }}
+                                                    </div>
+                                                    {% if items %}
+                                                        <ul>
+                                                            {% for o, key_space_residue in items %}
+                                                                <li>
+                                                                    <a tabindex="0"
+                                                                       class="sc-add-to-cart btn btn-warning mt-1"
+                                                                       data-name="{{ object.title }}"
+                                                                       data-id="{{ object.id }}"
+                                                                       data-date="{{ o|date:"d/m/Y H:i" }}"
+                                                                       data-price="{{ object.price }}"
+                                                                       href="#"
+                                                                    >
+                                                                        {{ o|date:"H:i" }}
+                                                                        - {{ space_available|get_obj_attr:key_space_residue }}
+                                                                        places
+                                                                    </a>
+                                                                </li>{% endfor %}
+                                                        </ul>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        {% endfor %}
                     {% else %}
                         <p>Pas de prestation en {{ year }}.</p>
                     {% endif %}

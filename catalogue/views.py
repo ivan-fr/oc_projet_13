@@ -1,6 +1,7 @@
 from datetime import datetime
 import itertools
 import json
+import calendar
 
 from django.conf import settings
 from django.views.generic import ListView, DetailView
@@ -94,7 +95,7 @@ class MeetingView(DetailView):
         event_type = self.object.event_type
         ancestors = event_type.get_ancestors()
 
-        year = int(datetime.now().year)
+        now = datetime.now()
 
         occurrences = getattr(self.object.recurrences, 'occurrences', None)
 
@@ -104,12 +105,14 @@ class MeetingView(DetailView):
                            for _event_type in ancestors] +
                           [{'label': event_type.label, 'pk': event_type.pk}],
             'eventtype': ancestors[0] if ancestors else event_type,
-            'year': year,
         }
 
         if occurrences:
             def group_key(o):
-                return datetime(year, o.month, 1)
+                return datetime(o.year, o.month, 1)
+
+            def start_day(o):
+                return o.day
 
             annotate_space_reserved = {
                 'nb_space_reverved_' + str(i): Coalesce(Sum(
@@ -134,25 +137,57 @@ class MeetingView(DetailView):
                 .annotate(**annotate_space_residue) \
                 .first()
 
-            _list, start, end = [], 0, 0
-            for dt, _o in itertools.groupby(occurrences(), group_key):
-                o = list(_o)
-                end += len(o)
-                _list.append((dt,
-                              list(
-                                  zip(
-                                      list(
-                                          o
-                                      ),
-                                      list(
-                                          annotate_space_residue.keys()
-                                      )[start:end]
-                                  )
-                              ))
-                             )
-                start = end
+            _calendars, start, end = {}, 0, 0
+            for dt_by_month, occurrences_by_month in \
+                    itertools.groupby(occurrences(), group_key):
 
-            _dict['by_month'] = _list
+                by_day = []
+                for dt_by_day, o_d in itertools.groupby(occurrences_by_month,
+                                                        start_day):
+                    o_d = list(o_d)
+                    end += len(o_d)
+                    by_day.append((dt_by_day,
+                                   list(
+                                       zip(
+                                           list(
+                                               o_d
+                                           ),
+                                           list(
+                                               annotate_space_residue.keys()
+                                           )[start:end]
+                                       )
+                                   ))
+                                  )
+                    start = end
+
+                by_day = dict(by_day)
+
+                entire_cal = []
+                cal = calendar.monthcalendar(dt_by_month.year,
+                                             dt_by_month.month)
+                for row in cal:
+                    _row = []
+                    for d in row:
+                        if d:
+                            if datetime(dt_by_month.year,
+                                        dt_by_month.month, 1) > \
+                                    datetime(
+                                        now.year,
+                                        now.month, 1) or \
+                                    datetime(
+                                        dt_by_month.year,
+                                        dt_by_month.month,
+                                        d, 23, 59, 59) >= now:
+                                _row.append((d, by_day.get(d, [])))
+                                continue
+                        _row.append((None, []))
+                    if _row != [(None, []) for i in
+                                range(0, len(_row))]:
+                        entire_cal.append(_row)
+
+                _calendars[dt_by_month] = entire_cal
+
+            _dict['calendars'] = _calendars
             _dict['space_available'] = space_available
 
         context = self.get_context_data(**_dict)

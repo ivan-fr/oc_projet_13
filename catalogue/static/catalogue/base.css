@@ -58,3 +58,18 @@
 caption {
     caption-side: top;
 }
+
+.background-grey {
+    background-color: rgb(235, 235, 235);
+}
+
+table.reservation caption {
+    background-color: royalblue;
+    color: white;
+    text-align: center;
+}
+
+table.reservation ul {
+    list-style-type: none;
+    padding-left: 0;
+}

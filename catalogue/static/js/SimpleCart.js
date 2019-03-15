@@ -7,11 +7,12 @@ jQuery(function ($) {
     };
 
     class Item {
-        constructor(id, name, date, count) {
+        constructor(id, name, date, count, price) {
             this.id = id;
             this.name = name;
             this.date = date;
             this.count = count;
+            this.price = price
         }
     }
 
@@ -29,8 +30,11 @@ jQuery(function ($) {
             this._loadCart();
             this._markAddItemButton();
             this._setEvents();
+
             this.tbody_item_cart = $('<tbody></tbody>');
             this._updateCartDetails();
+
+            this.total_price = $('<th></th>');
 
             let table_item_cart = $('<table></table>').addClass('table table-bordered mb-0')
                 .prepend($('<caption></caption>').text('Votre panier'))
@@ -41,6 +45,7 @@ jQuery(function ($) {
                         '      <th scope="col">Événement</th>\n' +
                         '      <th scope="col">Date</th>\n' +
                         '      <th scope="col">Quantité</th>\n' +
+                        '      <th scope="col">Prix</th>\n' +
                         '    </tr>')
                 ).append(
                     this.tbody_item_cart
@@ -48,12 +53,13 @@ jQuery(function ($) {
                     $('<tfoot></tfoot>').html(
                         '<th class="text-center" colspan="4"><a href="' + this.cart_ele.attr('data-url-submit-button') + '" class="btn btn-warning">' +
                         'Valider mon panier</a></th>'
-                    )
+                    ).append(this.total_price)
                 );
 
             this.row_col_table_item_cart = $('<div></div>').addClass('row mt-4').append(
                 $('<div></div>').addClass('col-12').prepend(table_item_cart)
             );
+
         }
 
         _markAddItemButton() {
@@ -88,6 +94,7 @@ jQuery(function ($) {
                 let id = $(this).attr("data-id");
                 let name = $(this).attr("data-name");
                 let date = $(this).attr("data-date");
+                let price = $(this).attr('data-price');
 
                 if (id !== undefined && name !== undefined && date !== undefined) {
                     if (!(mi.cart_ele.parent().hasClass('active'))) {
@@ -102,7 +109,7 @@ jQuery(function ($) {
                             }
                         }
                     }
-                    mi._addItemToCart(id, name, date, 1, this);
+                    mi._addItemToCart(id, name, date, 1, price, this);
                     mi._updateCartDetails();
                 }
             });
@@ -126,11 +133,20 @@ jQuery(function ($) {
                 function (index) {
                     $(this).text(index + 1);
                 }
-            )
+            );
+
+            let total_price = 0;
+            $(this.tbody_item_cart).find("td span.price").each(
+                function () {
+                    total_price += parseFloat($(this).text());
+                }
+            );
+
+            $(this.total_price).html(total_price.toFixed(2) + ' <i class="fas fa-euro-sign"></i>')
         }
 
         /* Helper Functions */
-        _addItemToCart(id, name, date, count, button) {
+        _addItemToCart(id, name, date, count, price, button) {
             for (let i in this.cart) {
                 if (this.cart.hasOwnProperty(i) && this.cart[i].id === id && this.cart[i].date === date) {
                     if (this.cart[i].count <= 8) {
@@ -143,7 +159,7 @@ jQuery(function ($) {
             }
 
             if (this._totalCartCount() <= 2) {
-                let item = new Item(id, name, date, count);
+                let item = new Item(id, name, date, count, price);
                 this.cart.push(item);
                 this._saveCart();
                 this._addTableItem(item);
@@ -187,9 +203,11 @@ jQuery(function ($) {
             if (input_count_of_item.length === 1) {
                 if (!from_show) {
                     input_count_of_item.val(item.count);
-                    input_count_of_item.parents('tr').removeClass();
-                    input_count_of_item.parents('tr').addClass('color-yellow');
-                    input_count_of_item.parents('tr').delay(200)
+                    let principale_tr = input_count_of_item.parents('tr');
+                    principale_tr.find('.price').text((item.count * item.price).toFixed(2));
+                    principale_tr.removeClass();
+                    principale_tr.addClass('color-yellow');
+                    principale_tr.delay(200)
                         .queue(function (next) {
                             $(this).addClass('transition');
                             next();
@@ -197,6 +215,8 @@ jQuery(function ($) {
                 }
                 return;
             }
+
+            let price_count = $('<td></td>').html('<span class="price">' + (item.price * item.count).toFixed(2) + '</span> <i class="fas fa-euro-sign"></i>');
 
             let input_count = $('<input />').attr({
                 type: 'number',
@@ -220,6 +240,7 @@ jQuery(function ($) {
                 } else if (!$.isNumeric(count)) {
                     count = '0'
                 }
+                price_count.find('span').text((parseFloat(count) * item.price).toFixed(2));
                 mi._removeItemFromCart(this, item, count);
                 mi._updateCartDetails();
             });
@@ -241,7 +262,7 @@ jQuery(function ($) {
                                 )
                         ).append(input_count)
                 )
-            );
+            ).append(price_count);
 
             if (!(from_show)) {
                 tr_tbody_item_cart.addClass('color-yellow');
