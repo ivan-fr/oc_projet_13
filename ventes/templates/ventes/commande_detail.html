@@ -24,14 +24,18 @@
                         - {% multiply through.quantity through.to_meeting.price %}
                         <i class="fas fa-euro-sign"></i>
                     </li>
-                    <li class="list-group-item list-group-item-info">
-                        <img src="{{ through.qrcode.url }}" width="200px"
-                             height="200px" alt="qrcode">
-                    </li>
+                    {% if through.qrcode %}
+                        <li class="list-group-item list-group-item-info">
+                            <img src="{{ through.qrcode.url }}" width="200px"
+                                 height="200px" alt="qrcode">
+                        </li>
+                    {% endif %}
                 {% endfor %}
             </ul>
-            <div class="mt-3">Montant total : {{ object.total_price|twodigitcomma }} <i
-                    class="fas fa-euro-sign"></i></div>
+            <div class="mt-3">Montant total
+                : {{ object.total_price|twodigitcomma }} <i
+                        class="fas fa-euro-sign"></i></div>
+            {{ paypal_form.render }}
         </div>
     </div>
 {% endblock %}

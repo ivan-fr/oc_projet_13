@@ -11,6 +11,7 @@ class Commande(models.Model):
                                       through='CommandeMeeting',
                                       through_fields=('from_commande',
                                                       'to_meeting'))
+    payment_status = models.BooleanField(default=False)
 
 
 class CommandeMeeting(models.Model):

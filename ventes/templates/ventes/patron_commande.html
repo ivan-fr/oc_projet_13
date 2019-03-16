@@ -3,7 +3,12 @@
 <div class="card border-danger mt-3">
     <div class="card-header">
         <div class="d-flex bd-highlight mb-0">
-            <div class="mr-auto bd-highlight">{{ object.date|date:"l d F H:i"|capfirst }}</div>
+            <div class="mr-auto bd-highlight">
+                {{ object.date|date:"l d F H:i"|capfirst }}
+                {% if not object.payment_status %}
+                    <span class="badge badge-danger">Non payé</span>
+                {% endif %}
+            </div>
             <div class="bd-highlight"><a
                     href="{% url 'ventes:show-commande' object.pk %}"
                     class="btn btn-success">Voir

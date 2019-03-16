@@ -24,7 +24,7 @@ SECRET_KEY = 'k@#o6=7oc^9!u0g!#-+=umdu&&&g&#%fy_838oj0ya8#mjpxzs'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['81af5efd.ngrok.io', '127.0.0.1']
 
 # Application definition
 
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'treebeard',
     'widget_tweaks',
+    'paypal.standard.ipn',
     'swingtime',
     'catalogue.apps.CatalogueConfig',
     'ventes.apps.VentesConfig',
@@ -135,3 +136,6 @@ DEPARTMENTS_FILE = os.path.join(BASE_DIR, "catalogue", "static",
 
 LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = '/session/login/'
+
+PAYPAL_TEST = True
+PAYPAL_RECEIVER_EMAIL = 'ivan.besevic_fr-facilitator@yahoo.com'

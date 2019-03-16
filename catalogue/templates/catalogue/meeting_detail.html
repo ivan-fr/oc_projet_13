@@ -73,7 +73,7 @@
                     {% if calendars %}
                         {% for month, calendar in calendars.items %}
                             <table class="table table-bordered reservation">
-                                <caption>{{ month|date:"F"|capfirst }}</caption>
+                                <caption>{{ month|date:"F Y"|capfirst }}</caption>
                                 <thead>
                                 <tr>
                                     <th>Lundi</th>
@@ -122,7 +122,7 @@
                             </table>
                         {% endfor %}
                     {% else %}
-                        <p>Pas de prestation en {{ year }}.</p>
+                        <p>Pas de prestation.</p>
                     {% endif %}
                 </div>
             </div>

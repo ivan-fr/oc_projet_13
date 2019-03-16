@@ -12,7 +12,7 @@ jQuery(function ($) {
             this.name = name;
             this.date = date;
             this.count = count;
-            this.price = price
+            this.price = parseFloat(price)
         }
     }
 
@@ -36,7 +36,7 @@ jQuery(function ($) {
 
             this.total_price = $('<th></th>');
 
-            let table_item_cart = $('<table></table>').addClass('table table-bordered mb-0')
+            let table_item_cart = $('<table></table>').addClass('table panier table-bordered mb-0')
                 .prepend($('<caption></caption>').text('Votre panier'))
                 .append(
                     $('<thead></thead>').html(

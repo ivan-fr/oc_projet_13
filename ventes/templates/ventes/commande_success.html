@@ -1,0 +1,29 @@
+{% extends 'oc_projet_13/base.html' %}
+
+{% block body %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-secondary">
+                <div class="card-header">Paiement réussi ! Patientez</div>
+                <div class="card-body"
+                     id="container_commande_success"
+                     data-commande-success-url="{% url 'ventes:show-commande' commande_pk %}">
+                    <div class="spinner-grow" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        jQuery(function ($) {
+            window.setTimeout(function () {
+                // Move to a new location or you can do something else
+                window.location.href = $('#container_commande_success').attr('data-commande-success-url');
+            }, 7000);
+        });
+    </script>
+{% endblock %}

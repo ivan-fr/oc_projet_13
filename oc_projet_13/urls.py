@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.conf import settings
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf.urls.static import static
 
 from catalogue import views
@@ -26,7 +26,8 @@ urlpatterns = [
     path('', views.IndexView.as_view(),
          {'department_code': '75'}, name='index'),
     path('session/', include('session.urls')),
-    path('ventes/', include('ventes.urls'))
+    path('ventes/', include('ventes.urls')),
+    re_path(r'^paypal/', include('paypal.standard.ipn.urls'))
 ]
 
 if settings.DEBUG:

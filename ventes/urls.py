@@ -23,11 +23,14 @@ commandes_patterns = [
 ]
 
 urlpatterns = [
-    path('commande/formset/', views.CommandeView.as_view(),
+    path('commande/formset/', views.CommandeFormsetView.as_view(),
          name='commande-formset'),
     path('commande/', login_required(views.CommandeTemplateView.as_view()),
          name='commande'),
+    re_path(r'^commande-success/(?P<commande_pk>[\d]+)/$', login_required(
+        views.CommandePaymentSuccesTemplateView.as_view()),
+         name='commande-success'),
     re_path(r'^commande/(?P<commande_pk>[\d]+)/$',
-            views.CommadeView.as_view(), name='show-commande'),
+            login_required(views.CommandeView.as_view()), name='show-commande'),
     path('commandes/', include(commandes_patterns)),
 ]

@@ -63,13 +63,22 @@ caption {
     background-color: rgb(235, 235, 235);
 }
 
-table.reservation caption {
+table.reservation caption, table.panier caption {
     background-color: royalblue;
     color: white;
     text-align: center;
+    font-weight: bold;
 }
 
 table.reservation ul {
     list-style-type: none;
     padding-left: 0;
+}
+
+body {
+    background-image: url("../image/doodles.png");
+}
+
+table {
+    background-color: white;
 }
