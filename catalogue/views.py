@@ -115,7 +115,7 @@ class MeetingView(DetailView):
                 return o.day
 
             annotate_space_reserved = {
-                'nb_space_reverved_' + str(i): Coalesce(Sum(
+                str(i): Coalesce(Sum(
                     F('to_meeting__quantity'),
                     filter=Q(
                         to_meeting__date_meeting=timezone.make_aware(
@@ -126,11 +126,14 @@ class MeetingView(DetailView):
                 for i, v in enumerate(occurrences())
             }
 
-            annotate_space_residue = {
-                'nb_space_residue_' + key[-1]: F('place__space_available')
-                                               - F(key)
-                for key in annotate_space_reserved.keys()
-            }
+            annotate_space_residue = {}
+            annotate_space_reserved_interger = tuple(
+                int(i_str) for i_str
+                in annotate_space_reserved.keys()
+            )
+            for key in sorted(annotate_space_reserved_interger):
+                annotate_space_residue['nb_space_residue_' + str(key)] = \
+                    F('place__space_available') - F(str(key))
 
             space_available = Meeting.objects.filter(pk=self.object.pk) \
                 .annotate(**annotate_space_reserved) \
