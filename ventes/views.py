@@ -10,7 +10,7 @@ from django.db import transaction
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.db.models import F, Sum, FloatField, DecimalField
-from django.db.models.functions import Cast
+from django.db.models.functions import Coalesce
 
 from django.http import Http404
 from django.urls import reverse
@@ -113,10 +113,11 @@ class CommandeMixinView(object):
         return queryset.filter(user=self.request.user) \
             .prefetch_related("from_commande", 'from_commande__to_meeting') \
             .annotate(
-            total_price=Cast(Sum(
+            total_price=Sum(
                 F('from_commande__quantity')
-                * F('from_commande__to_meeting__price')
-            ), DecimalField())
+                * F('from_commande__to_meeting__price'),
+                output_field=DecimalField()
+            )
         )
 
 
@@ -141,11 +142,11 @@ class CommandeView(DetailView):
         queryset = queryset.prefetch_related("from_commande",
                                              'from_commande__to_meeting') \
             .annotate(
-            total_price=Sum(
+            total_price=Coalesce(Sum(
                 F('from_commande__quantity')
                 * F('from_commande__to_meeting__price'),
                 output_field=FloatField()
-            )
+            ), 0)
         )
         return queryset
 
