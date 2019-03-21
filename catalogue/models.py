@@ -1,5 +1,7 @@
 import json
 
+from decimal import Decimal
+
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -37,10 +39,9 @@ class Place(models.Model):
              + department['name']) for department in json.load(file))
 
     name = models.CharField(max_length=50)
-    space_available = models.PositiveIntegerField(default=1,
-                                                  validators=
-                                                  [MinValueValidator(1),
-                                                   MaxValueValidator(1000)])
+    space_available = models.PositiveIntegerField(
+        default=1,
+        validators=[MinValueValidator(1), MaxValueValidator(1000)])
     street = models.CharField(max_length=150)
     city = models.CharField(max_length=50)
     postal_code = models.CharField(max_length=20)
@@ -52,13 +53,18 @@ class Place(models.Model):
 
 
 class Meeting(swingtime.Event):
-    photo = models.ImageField(upload_to='meeting/%Y/%m/%d/')
+    photo = models.ImageField(upload_to='meeting/%Y/%m/%d/', blank=True,
+                              null=True)
     place = models.ForeignKey(Place, on_delete=models.CASCADE)
     authors = models.ManyToManyField(Author, blank=True)
     artists = models.ManyToManyField(Artist, blank=True)
     directors = models.ManyToManyField(Director, blank=True)
-    price = models.FloatField(default=15.0, validators=[MinValueValidator(1),
-                                                        MaxValueValidator(150)])
+    price = models.DecimalField(
+        default=Decimal(15),
+        max_digits=5,
+        decimal_places=2,
+        validators=[MinValueValidator(1), MaxValueValidator(150)]
+    )
 
     def __str__(self):
         return self.title

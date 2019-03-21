@@ -9,7 +9,9 @@ from django.core import signing
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from django.db.models import F, Sum, FloatField
+from django.db.models import F, Sum, FloatField, DecimalField
+from django.db.models.functions import Cast
+
 from django.http import Http404
 from django.urls import reverse
 from django.conf import settings
@@ -33,7 +35,7 @@ class CommandeFormsetView(FormSetView):
     def get(self, request, *args, **kwargs):
         if request.is_ajax():
             self.initial = json.loads(
-                request.GET.get('initial_formset_commande'))
+                request.GET.get('initial_formset_commande', '[]'))
             sign = signing.dumps(self.initial)
 
             ids = tuple(set(_dict['id'] for _dict in self.initial))
@@ -110,9 +112,12 @@ class CommandeMixinView(object):
         queryset = super(CommandeMixinView, self).get_queryset()
         return queryset.filter(user=self.request.user) \
             .prefetch_related("from_commande", 'from_commande__to_meeting') \
-            .annotate(total_price=Sum(F('from_commande__quantity')
-                                      * F('from_commande__to_meeting__price'),
-                                      output_field=FloatField()))
+            .annotate(
+            total_price=Cast(Sum(
+                F('from_commande__quantity')
+                * F('from_commande__to_meeting__price')
+            ), DecimalField())
+        )
 
 
 class CommandeArchiveView(CommandeMixinView, ArchiveIndexView):
@@ -135,9 +140,13 @@ class CommandeView(DetailView):
         queryset = super(CommandeView, self).get_queryset()
         queryset = queryset.prefetch_related("from_commande",
                                              'from_commande__to_meeting') \
-            .annotate(total_price=Sum(F('from_commande__quantity')
-                                      * F('from_commande__to_meeting__price'),
-                                      output_field=FloatField()))
+            .annotate(
+            total_price=Sum(
+                F('from_commande__quantity')
+                * F('from_commande__to_meeting__price'),
+                output_field=FloatField()
+            )
+        )
         return queryset
 
     def get_object(self, queryset=None):
@@ -161,8 +170,7 @@ class CommandeView(DetailView):
                 "notify_url": request.build_absolute_uri(reverse('paypal-ipn')),
                 "return": request.build_absolute_uri(
                     reverse('ventes:commande-success',
-                            kwargs={'commande_pk': self.object.pk}
-                            )
+                            kwargs={'commande_pk': self.object.pk})
                 ),
                 "cancel_return": request.build_absolute_uri(
                     reverse('ventes:show-commande',

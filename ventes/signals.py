@@ -33,10 +33,13 @@ def payment_notification(sender, **kwargs):
         commande = Commande.objects.prefetch_related(
             "from_commande",
             'from_commande__to_meeting') \
-            .annotate(total_price=Sum(F('from_commande__quantity')
-                                      * F('from_commande__to_meeting__price'),
-                                      output_field=FloatField())) \
-            .filter(pk=id_commande).get()
+            .annotate(
+            total_price=Sum(
+                F('from_commande__quantity')
+                * F('from_commande__to_meeting__price'),
+                output_field=FloatField()
+            )
+        ).filter(pk=id_commande).get()
 
         if float(ipn_obj.mc_gross) == float(commande.total_price) and \
                 ipn_obj.mc_currency == 'EUR':
