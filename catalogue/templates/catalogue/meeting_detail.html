@@ -17,7 +17,9 @@
     </div>
     <div class="row">
         <div class="col-12 col-lg-4" align="center">
-            <img src="{{ object.photo.url }}" alt="photo meeting">
+            {% if object.photo %}
+                <img src="{{ object.photo.url }}" alt="photo meeting">
+            {% endif %}
             <p><span
                     class="badge badge-primary">{{ object.price|floatformat:2 }} euros/pers</span>
             </p>

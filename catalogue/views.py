@@ -31,7 +31,8 @@ class IndexView(ListView):
         with open(settings.DEPARTMENTS_FILE, "r", encoding="utf-8") as file:
             self.departments = {
                 department['code']: department['name']
-                for department in json.load(file)}
+                for department in json.load(file)
+            }
         return super(IndexView, self).get(request, *args, **kwargs)
 
     def get_context_data(self, *args, object_list=None, **kwargs):
@@ -145,22 +146,23 @@ class MeetingView(DetailView):
                     itertools.groupby(occurrences(), group_key):
 
                 by_day = []
-                for dt_by_day, o_d in itertools.groupby(occurrences_by_month,
-                                                        start_day):
+                for dt_by_day, o_d in itertools.groupby(
+                        occurrences_by_month, start_day):
                     o_d = list(o_d)
                     end += len(o_d)
-                    by_day.append((dt_by_day,
-                                   list(
-                                       zip(
-                                           list(
-                                               o_d
-                                           ),
-                                           list(
-                                               annotate_space_residue.keys()
-                                           )[start:end]
-                                       )
-                                   ))
-                                  )
+                    by_day.append(
+                        (dt_by_day,
+                         list(
+                             zip(
+                                 list(
+                                     o_d
+                                 ),
+                                 list(
+                                     annotate_space_residue.keys()
+                                 )[start:end]
+                             )
+                         ))
+                    )
                     start = end
 
                 by_day = dict(by_day)
@@ -184,8 +186,7 @@ class MeetingView(DetailView):
                                 _row.append((d, by_day.get(d, [])))
                                 continue
                         _row.append((None, []))
-                    if _row != [(None, []) for i in
-                                range(0, len(_row))]:
+                    if _row != [(None, [])] * len(_row):
                         entire_cal.append(_row)
 
                 _calendars[dt_by_month] = entire_cal

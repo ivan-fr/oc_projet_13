@@ -63,7 +63,7 @@ class Meeting(swingtime.Event):
         default=Decimal(15),
         max_digits=5,
         decimal_places=2,
-        validators=[MinValueValidator(1), MaxValueValidator(150)]
+        validators=[MinValueValidator(1), MaxValueValidator(999)]
     )
 
     def __str__(self):
