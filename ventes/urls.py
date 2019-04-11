@@ -29,8 +29,13 @@ urlpatterns = [
          name='commande'),
     re_path(r'^commande-success/(?P<commande_pk>[\d]+)/$', login_required(
         views.CommandePaymentSuccesTemplateView.as_view()),
-         name='commande-success'),
+            name='commande-success'),
     re_path(r'^commande/(?P<commande_pk>[\d]+)/$',
             login_required(views.CommandeView.as_view()), name='show-commande'),
     path('commandes/', include(commandes_patterns)),
+    path('commandes/turnover/', views.TurnoverView.as_view(),
+         name='commandes-turnover'),
+    re_path(r'^commandes/turnover/(?P<year>[\d]+)/$',
+         views.TurnoverView.as_view(),
+         name='commandes-turnover-year')
 ]

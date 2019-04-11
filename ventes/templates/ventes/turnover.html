@@ -1,0 +1,55 @@
+{% extends 'oc_projet_13/base.html' %}
+
+{% block body %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-secondary">
+                <div class="card-header">Les revenues</div>
+                <div class="card-body">
+                    <h3>
+                        <a class="plain"
+                           href="{% url 'ventes:commandes-turnover-year' last_year %}"
+                           title="Last Month">&larr;</a>
+                        Année {{ year }}
+                        <a class="plain"
+                           href="{% url 'ventes:commandes-turnover-year' next_year %}"
+                           title="Next Month">&rarr;</a>
+                    </h3>
+
+                    {% if by_month %}
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th>Mois</th>
+                                <th>Jour</th>
+                                <th>Revenue</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for dt,occurrences in by_month %}
+                                <tr class="month-divider">
+                                    <th rowspan="{{ occurrences|length }}">
+                                        {{ dt|date:"F" }}
+                                    </th>
+                                    {% for o in occurrences %}
+                                        <td>
+                                            {{ o.day }}/{{ o.month }}/{{ o.year }}</td>
+                                        <td>{{ o.total_price|floatformat:2 }}
+                                            euros
+                                        </td>
+                                        </tr>
+                                        {% if not forloop.last %}
+                                            <tr>
+                                        {% endif %}
+                                    {% endfor %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>Pas de revenues en {{ year }}.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

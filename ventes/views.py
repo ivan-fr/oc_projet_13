@@ -1,5 +1,6 @@
 import json
-
+from datetime import datetime
+import itertools
 import urllib.parse
 
 from django.views.generic.dates import ArchiveIndexView, MonthArchiveView, \
@@ -10,7 +11,8 @@ from django.db import transaction
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.db.models import F, Sum, FloatField, DecimalField
-from django.db.models.functions import Coalesce
+from django.db.models.functions import Coalesce, ExtractDay, ExtractMonth, \
+    ExtractYear
 
 from django.http import Http404
 from django.urls import reverse
@@ -175,8 +177,7 @@ class CommandeView(DetailView):
                 ),
                 "cancel_return": request.build_absolute_uri(
                     reverse('ventes:show-commande',
-                            kwargs={'commande_pk': self.object.pk}
-                            )
+                            kwargs={'commande_pk': self.object.pk})
                 ),
                 "custom": signer.sign(self.object.pk),
                 "currency_code": "EUR"
@@ -197,3 +198,46 @@ class CommandeView(DetailView):
 
 class CommandePaymentSuccesTemplateView(TemplateView):
     template_name = 'ventes/commande_success.html'
+
+
+class TurnoverView(TemplateView):
+    template_name = 'ventes/turnover.html'
+
+    def get(self, request, *args, **kwargs):
+        if self.kwargs.get('year'):
+            year = int(self.kwargs.get('year'))
+        else:
+            now = datetime.now()
+            year = now.year
+
+        def group_key(o):
+            return datetime(year, o.get('month'), 1)
+
+        queryset = Commande.objects \
+            .all() \
+            .filter(
+            payment_status=True,
+            date__year=year
+        ) \
+            .prefetch_related("from_commande", 'from_commande__to_meeting') \
+            .annotate(
+            year=ExtractYear('date'),
+            month=ExtractMonth('date'),
+            day=ExtractDay('date'),
+        ).values('year', 'month', 'day') \
+            .annotate(
+            total_price=Sum(
+                F('from_commande__quantity')
+                * F('from_commande__to_meeting__price'),
+                output_field=DecimalField()
+            ))
+
+        kwargs = {
+            'year': year,
+            'by_month': [(dt, list(c)) for dt, c in
+                         itertools.groupby(queryset, group_key)],
+            'next_year': year + 1,
+            'last_year': year - 1
+        }
+
+        return super(TurnoverView, self).get(request, *args, **kwargs)
