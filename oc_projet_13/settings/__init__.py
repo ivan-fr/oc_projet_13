@@ -136,3 +136,9 @@ LOGIN_URL = '/session/login/'
 
 PAYPAL_TEST = True
 PAYPAL_RECEIVER_EMAIL = 'ivan.besevic_fr-facilitator@yahoo.com'
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'ivan.besevic.etudiant@gmail.com'
+EMAIL_HOST_PASSWORD = 'bonjourni32145.3'
+EMAIL_PORT = 587
