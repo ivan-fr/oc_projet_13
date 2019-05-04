@@ -1,11 +1,16 @@
+import datetime
+
 from django import forms
-from catalogue.models import Meeting
-from django.utils import timezone
 from django.db.models import F, Sum, Q
 from django.db.models.functions import Coalesce
+from django.utils import timezone
+
+from catalogue.models import Meeting
 
 
 class CommandeForm(forms.Form):
+    """form of command validation"""
+
     id = forms.IntegerField(min_value=1, disabled=True)
     name = forms.CharField(max_length=32, min_length=2, disabled=True)
     date = forms.DateTimeField(input_formats=['%d/%m/%Y %H:%M'], disabled=True)
@@ -33,7 +38,13 @@ class CommandeForm(forms.Form):
             if meeting.place_restante <= 0:
                 raise forms.ValidationError('Nombre de places dépassées.')
 
-            occurrences = getattr(meeting.recurrences, 'occurrences', None)
+            now = datetime.datetime.now()
+
+            occurrences = getattr(
+                meeting.recurrencesself.object.recurrences.occurrences(
+                    dtstart=now + datetime.timedelta(minutes=30)),
+                'occurrences', None)
+
             if not occurrences:
                 raise forms.ValidationError("Il n'y a pas d'occurence.")
             occurrences = [timezone.make_aware(date.replace(second=0)) for date

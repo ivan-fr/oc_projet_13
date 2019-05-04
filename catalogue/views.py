@@ -1,20 +1,21 @@
-from datetime import datetime
+import calendar
+import datetime
 import itertools
 import json
-import calendar
 
 from django.conf import settings
-from django.views.generic import ListView, DetailView
+from django.db.models import Q, F, Count, Sum
+from django.db.models.functions import Coalesce
 from django.utils import timezone
+from django.views.generic import ListView, DetailView
 
 from catalogue.models import Meeting, Place
 from swingtime.models import EventType
 
-from django.db.models import Q, F, Count, Sum
-from django.db.models.functions import Coalesce
-
 
 class IndexView(ListView):
+    """Render the index page"""
+
     paginate_by = 5
     allow_empty = True
     template_name = 'catalogue/index_list.html'
@@ -51,6 +52,8 @@ class IndexView(ListView):
 
 
 class EventTypeView(ListView):
+    """ Render events types view"""
+
     allow_empty = True
     paginate_by = 10
     model = Meeting
@@ -82,23 +85,23 @@ class EventTypeView(ListView):
 
 
 class MeetingView(DetailView):
+    """ Render the meeting views with calendar """
     model = Meeting
     pk_url_kwarg = 'meeting_pk'
 
-    def get_queryset(self):
-        queryset = super(MeetingView, self).get_queryset()
-        return queryset.select_related('event_type', 'place') \
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset().select_related('event_type', 'place') \
             .prefetch_related('notes', 'authors', 'artists', 'directors')
 
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
+        self.object = self.get_object(queryset=queryset)
 
         event_type = self.object.event_type
         ancestors = event_type.get_ancestors()
 
-        now = datetime.now()
+        now = datetime.datetime.now()
 
-        occurrences = getattr(self.object.recurrences, 'occurrences', None)
+        occurrences = getattr(self.object.recurrences.occurrences(
+            dtstart=now + datetime.timedelta(minutes=30)), 'occurrences', None)
 
         _dict = {
             'root_events_types': EventType.get_root_nodes(),
@@ -109,8 +112,10 @@ class MeetingView(DetailView):
         }
 
         if occurrences:
-            def group_key(o):
-                return datetime(o.year, o.month, 1)
+            # if there is a occurence, render a calendar.
+
+            def start_month(o):
+                return datetime.datetime(o.year, o.month, 1)
 
             def start_day(o):
                 return o.day
@@ -136,14 +141,14 @@ class MeetingView(DetailView):
                 annotate_space_residue['nb_space_residue_' + str(key)] = \
                     F('place__space_available') - F(str(key))
 
-            space_available = Meeting.objects.filter(pk=self.object.pk) \
+            space_available = self.get_queryset() \
+                .objects.filter(pk=self.object.pk) \
                 .annotate(**annotate_space_reserved) \
-                .annotate(**annotate_space_residue) \
-                .first()
+                .annotate(**annotate_space_residue)
 
             _calendars, start, end = {}, 0, 0
             for dt_by_month, occurrences_by_month in \
-                    itertools.groupby(occurrences(), group_key):
+                    itertools.groupby(occurrences(), start_month):
 
                 by_day = []
                 for dt_by_day, o_d in itertools.groupby(
@@ -154,9 +159,7 @@ class MeetingView(DetailView):
                         (dt_by_day,
                          list(
                              zip(
-                                 list(
-                                     o_d
-                                 ),
+                                 o_d,
                                  list(
                                      annotate_space_residue.keys()
                                  )[start:end]
@@ -174,12 +177,12 @@ class MeetingView(DetailView):
                     _row = []
                     for d in row:
                         if d:
-                            if datetime(dt_by_month.year,
-                                        dt_by_month.month, 1) > \
-                                    datetime(
+                            if datetime.datetime(dt_by_month.year,
+                                                 dt_by_month.month, 1) > \
+                                    datetime.datetime(
                                         now.year,
                                         now.month, 1) or \
-                                    datetime(
+                                    datetime.datetime(
                                         dt_by_month.year,
                                         dt_by_month.month,
                                         d, 23, 59, 59) >= now:

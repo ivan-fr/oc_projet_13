@@ -1,33 +1,33 @@
-import json
-from datetime import datetime
 import itertools
+import json
 import urllib.parse
+from datetime import datetime
 
-from django.views.generic.dates import ArchiveIndexView, MonthArchiveView, \
-    YearArchiveView
-from django.views.generic import TemplateView, DetailView
-from django.core import signing
-from django.db import transaction
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
+from django.core import signing
+from django.core.signing import Signer
+from django.db import transaction
 from django.db.models import F, Sum, FloatField, DecimalField
 from django.db.models.functions import Coalesce, ExtractDay, ExtractMonth, \
     ExtractYear
-
 from django.http import Http404
 from django.urls import reverse
-from django.conf import settings
-from django.core.signing import Signer
-
+from django.utils.decorators import method_decorator
+from django.views.generic import TemplateView, DetailView
+from django.views.generic.dates import ArchiveIndexView, MonthArchiveView, \
+    YearArchiveView
+from extra_views import FormSetView
 from paypal.standard.forms import PayPalPaymentsForm
 
 from catalogue.models import Meeting
-from ventes.models import Commande, CommandeMeeting
-from extra_views import FormSetView
 from ventes.forms import CommandeForm
+from ventes.models import Commande, CommandeMeeting
 
 
 class CommandeFormsetView(FormSetView):
+    """Render the formset of a commmand"""
+
     form_class = CommandeForm
     factory_kwargs = {'extra': 0, 'max_num': 3, 'validate_max': True,
                       'min_num': 1, 'validate_min': True,
@@ -100,10 +100,12 @@ class CommandeFormsetView(FormSetView):
 
 
 class CommandeTemplateView(TemplateView):
+    """ Render the command template """
     template_name = 'ventes/commande.html'
 
 
 class CommandeMixinView(object):
+    """ Commande mixin class """
     model = Commande
     date_field = 'date'
     paginate_by = 4
@@ -124,18 +126,24 @@ class CommandeMixinView(object):
 
 
 class CommandeArchiveView(CommandeMixinView, ArchiveIndexView):
+    """Render command archive"""
     pass
 
 
 class CommandeYearArchiveView(CommandeMixinView, YearArchiveView):
+    """Render command archive by year"""
     pass
 
 
 class CommandeMonthArchiveView(CommandeMixinView, MonthArchiveView):
+    """Render command archive by month"""
+
     month_format = "%m"
 
 
 class CommandeView(DetailView):
+    """ render the command detail """
+
     model = Commande
     pk_url_kwarg = 'commande_pk'
 
@@ -197,10 +205,14 @@ class CommandeView(DetailView):
 
 
 class CommandePaymentSuccesTemplateView(TemplateView):
+    """ render success payment of a command"""
+
     template_name = 'ventes/commande_success.html'
 
 
 class TurnoverView(TemplateView):
+    """ render the turnover view """
+
     template_name = 'ventes/turnover.html'
 
     def get(self, request, *args, **kwargs):

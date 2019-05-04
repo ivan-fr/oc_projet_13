@@ -1,5 +1,4 @@
 import json
-
 from decimal import Decimal
 
 from django.conf import settings
@@ -10,6 +9,7 @@ from swingtime import models as swingtime
 
 
 class Contributor(models.Model):
+    """Contributor model"""
     name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
@@ -33,6 +33,8 @@ class Director(Contributor):
 
 
 class Place(models.Model):
+    """Place model"""
+
     with open(settings.DEPARTMENTS_FILE, "r", encoding="utf-8") as file:
         DEPARTMENT_CHOICES = tuple(
             (department['code'], department['code'] + ' - '
@@ -53,6 +55,8 @@ class Place(models.Model):
 
 
 class Meeting(swingtime.Event):
+    """Meeting model"""
+
     photo = models.ImageField(upload_to='meeting/%Y/%m/%d/', blank=True,
                               null=True)
     place = models.ForeignKey(Place, on_delete=models.CASCADE)

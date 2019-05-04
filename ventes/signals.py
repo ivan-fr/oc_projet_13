@@ -1,18 +1,19 @@
-import qrcode
 from io import BytesIO
 
-from paypal.standard.models import ST_PP_COMPLETED
-from paypal.standard.ipn.signals import valid_ipn_received
-
+import qrcode
 from django.conf import settings
-from django.core.signing import Signer
 from django.core.files import File
+from django.core.signing import Signer
 from django.db.models import F, Sum, FloatField
+from paypal.standard.ipn.signals import valid_ipn_received
+from paypal.standard.models import ST_PP_COMPLETED
 
 from ventes.models import Commande
 
 
 def payment_notification(sender, **kwargs):
+    """signal traitment of paypal process"""
+
     ipn_obj = sender
     if ipn_obj.payment_status == ST_PP_COMPLETED:
         # WARNING !

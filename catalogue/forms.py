@@ -9,6 +9,8 @@ from swingtime.models import EventType
 
 
 class MeetingForm(forms.ModelForm):
+    """Meeting form for admin interface"""
+
     event_type = forms.TypedChoiceField(coerce=int)
 
     def __init__(self, data=None, files=None, auto_id='id_%s', prefix=None,

@@ -1,5 +1,5 @@
 {% autoescape off %}
     Salut {{ user.username }},
     Cliquez sur ce lien pour confirmer votre inscription,
-    http://{{ domain }}{% url 'activate' uidb64=uid token=token %}
+    http://{{ domain }}{% url 'session:activate' uid token %}
 {% endautoescape %}
