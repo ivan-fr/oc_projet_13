@@ -5,6 +5,7 @@ from django.db import models
 from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
 from treebeard.al_tree import AL_Node
+
 from swingtime.fields import RecurrenceField
 
 __all__ = (
@@ -68,7 +69,8 @@ class Event(models.Model):
         on_delete=models.CASCADE
     )
 
-    recurrences = RecurrenceField(default=None, null=True)
+    recurrences = RecurrenceField(default=None, null=True,
+                                  include_dtstart=False)
     notes = GenericRelation(Note, verbose_name=_('notes'))
 
     class Meta:

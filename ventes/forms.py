@@ -40,10 +40,14 @@ class CommandeForm(forms.Form):
 
             now = datetime.datetime.now()
 
-            occurrences = getattr(
-                meeting.recurrencesself.object.recurrences.occurrences(
-                    dtstart=now + datetime.timedelta(minutes=30)),
-                'occurrences', None)
+            recurrences = self.object.recurrences
+            occurrences = None
+
+            if recurrences:
+                occurrences = recurrences.occurrences(
+                    dtstart=now + datetime.timedelta(minutes=30)) or None
+            else:
+                raise forms.ValidationError("Il n'y a pas d'occurence.")
 
             if not occurrences:
                 raise forms.ValidationError("Il n'y a pas d'occurence.")
