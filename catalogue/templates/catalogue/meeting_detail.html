@@ -16,18 +16,23 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-12 col-lg-4" align="center">
+        <div class="col-12 col-lg-4">
             {% if object.photo %}
                 <img src="{{ object.photo.url }}" alt="photo meeting">
             {% endif %}
-            <p><span
-                    class="badge badge-primary">{{ object.price|floatformat:2 }} euros/pers</span>
+            <p>
+                <span class="badge badge-primary">{{ object.price|floatformat:2 }} euros/pers</span>
             </p>
         </div>
         <div class="col-12 col-lg-8">
             <h3>{{ object.place.name }}</h3>
-            <p>{{ object.place.street }}, {{ object.place.postal_code }}, {{ object.place.city|capfirst }}<br>
-                {{ object.place.space_available }} places environs</p>
+            <p>
+                <span id="event_adresss">{{ object.place.street }}, {{ object.place.postal_code }}, {{ object.place.city|capfirst }}</span>
+                <br>
+                {{ object.place.space_available }} places environs
+            </p>
+
+            <div id="googleMap" class="map_canvas mb-3"></div>
 
             <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
                 <li class="nav-item">
@@ -133,4 +138,58 @@
 {% endblock %}
 
 {% block javascript %}
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyABktea4rFaWShQm7F25YWXgAuv9f-nFvk"
+            ></script>
+    <script>
+        jQuery(function ($) {
+            class lol {
+                constructor(adress) {
+                    this.adress = adress;
+                    this.getLatLngFromAdress();
+                }
+
+                getLatLngFromAdress() {
+                    let me = this;
+                    $.get("https://maps.googleapis.com/maps/api/geocode/json",
+                        {
+                            address: this.adress,
+                            key: "AIzaSyABktea4rFaWShQm7F25YWXgAuv9f-nFvk",
+                            language: "fr",
+                            components: "country:FR"
+                        }, function (data) {
+                            me.init(data);
+                        }, "json");
+                }
+
+                init(data) {
+                    let results = data.results[0];
+
+                    let _location = new google.maps.LatLng(results.geometry.location.lat,
+                        results.geometry.location.lng);
+
+                    let _location_northeast = new google.maps.LatLng(results.geometry.viewport.northeast.lat,
+                        results.geometry.viewport.northeast.lng);
+
+                    let _location_southwest = new google.maps.LatLng(results.geometry.viewport.southwest.lat,
+                        results.geometry.viewport.southwest.lng);
+
+                    let map = new google.maps.Map(document.getElementById("googleMap"), {
+                        mapTypeId: google.maps.MapTypeId.ROADMAP,
+                    });
+
+                    let marker = new google.maps.Marker({
+                        position: _location,
+                        map: map
+                    });
+
+                    let bounds = new google.maps.LatLngBounds();
+                    bounds.extend(_location_northeast);
+                    bounds.extend(_location_southwest);
+                    map.fitBounds(bounds);
+                }
+            }
+
+            new lol($('#event_adresss').text())
+        });
+    </script>
 {% endblock %}

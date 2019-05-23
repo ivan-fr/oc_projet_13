@@ -82,3 +82,8 @@ body {
 table {
     background-color: white;
 }
+
+.map_canvas {
+    height: 300px;
+    width: 100%;
+}

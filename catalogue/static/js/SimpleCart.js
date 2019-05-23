@@ -41,7 +41,6 @@ jQuery(function ($) {
             this.th_button = $('<th></th>').addClass('text-center').attr('colspan', 4);
             this.submit_button = $('<a></a>').addClass('btn btn-warning').attr('href', this.cart_ele.attr('data-url-submit-button')).text('Valider mon panier');
 
-
             let table_item_cart = $('<table></table>').addClass('table panier table-bordered mb-0')
                 .prepend($('<caption></caption>').text('Votre panier'))
                 .append(
