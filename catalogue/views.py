@@ -100,9 +100,6 @@ class MeetingView(DetailView):
 
         now = datetime.datetime.now()
 
-        occurrences = getattr(self.object.recurrences.occurrences(
-            dtstart=now + datetime.timedelta(minutes=30)), 'occurrences', None)
-
         _dict = {
             'root_events_types': EventType.get_root_nodes(),
             'breadcrumb': [{'label': _event_type.label, 'pk': _event_type.pk}
@@ -110,6 +107,13 @@ class MeetingView(DetailView):
                           [{'label': event_type.label, 'pk': event_type.pk}],
             'eventtype': ancestors[0] if ancestors else event_type,
         }
+
+        recurrences = self.object.recurrences
+        occurrences = None
+
+        if recurrences:
+            occurrences = recurrences.occurrences(
+                dtstart=now + datetime.timedelta(minutes=30)) or None
 
         if occurrences:
             # if there is a occurence, render a calendar.
@@ -129,7 +133,7 @@ class MeetingView(DetailView):
                         )
                     )
                 ), 0)
-                for i, v in enumerate(occurrences())
+                for i, v in enumerate(occurrences)
             }
 
             annotate_space_residue = {}
@@ -142,13 +146,14 @@ class MeetingView(DetailView):
                     F('place__space_available') - F(str(key))
 
             space_available = self.get_queryset() \
-                .objects.filter(pk=self.object.pk) \
+                .filter(pk=self.object.pk) \
                 .annotate(**annotate_space_reserved) \
-                .annotate(**annotate_space_residue)
+                .annotate(**annotate_space_residue) \
+                .get()
 
             _calendars, start, end = {}, 0, 0
             for dt_by_month, occurrences_by_month in \
-                    itertools.groupby(occurrences(), start_month):
+                    itertools.groupby(occurrences, start_month):
 
                 by_day = []
                 for dt_by_day, o_d in itertools.groupby(

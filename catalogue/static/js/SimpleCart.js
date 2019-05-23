@@ -12,7 +12,8 @@ jQuery(function ($) {
             this.name = name;
             this.date = date;
             this.count = count;
-            this.price = parseFloat(price)
+            this.price = parseFloat(price);
+            this.have_just_been_updated = false;
         }
     }
 
@@ -21,20 +22,25 @@ jQuery(function ($) {
         constructor(domEle, options = {}) {
             /* Merge user settings with default, recursively */
             this.options = $.extend(true, {}, defaults, options);
-            //Cart array
-            this.cart = [];
             //Dom Element
             this.cart_ele = $(domEle);
 
             //Initial init function
             this._loadCart();
             this._markAddItemButton();
+
+            this.button_remove_cart = $('<a></a>');
+            this.button_remove_cart.attr('href', '#').addClass('btn btn-danger ml-2').text('Supprimer mon panier');
+
             this._setEvents();
 
             this.tbody_item_cart = $('<tbody></tbody>');
             this._updateCartDetails();
 
             this.total_price = $('<th></th>');
+            this.th_button = $('<th></th>').addClass('text-center').attr('colspan', 4);
+            this.submit_button = $('<a></a>').addClass('btn btn-warning').attr('href', this.cart_ele.attr('data-url-submit-button')).text('Valider mon panier');
+
 
             let table_item_cart = $('<table></table>').addClass('table panier table-bordered mb-0')
                 .prepend($('<caption></caption>').text('Votre panier'))
@@ -50,16 +56,18 @@ jQuery(function ($) {
                 ).append(
                     this.tbody_item_cart
                 ).append(
-                    $('<tfoot></tfoot>').html(
-                        '<th class="text-center" colspan="4"><a href="' + this.cart_ele.attr('data-url-submit-button') + '" class="btn btn-warning">' +
-                        'Valider mon panier</a></th>'
+                    $('<tfoot></tfoot>').append(
+                        this.th_button.append(
+                            this.submit_button
+                        ).append(
+                            this.button_remove_cart
+                        )
                     ).append(this.total_price)
                 );
 
             this.row_col_table_item_cart = $('<div></div>').addClass('row mt-4').append(
                 $('<div></div>').addClass('col-12').prepend(table_item_cart)
             );
-
         }
 
         _markAddItemButton() {
@@ -76,14 +84,9 @@ jQuery(function ($) {
             for (let i in this.cart) {
                 if (this.cart.hasOwnProperty(i)) {
                     $('a[class*="sc-add-to-cart"][data-id="' + this.cart[i].id + '"][data-date="' + this.cart[i].date + '"]')
-                        .removeClass('btn-warning').addClass('btn-primary');
+                        .removeClass('btn-warning').addClass('btn-info');
                 }
             }
-        }
-
-        _disableEvents() {
-            $(this.options.addtoCartClass).off();
-            this.cart_ele.parent().off();
         }
 
         _setEvents() {
@@ -123,7 +126,12 @@ jQuery(function ($) {
                     mi.showTableItem();
                     mi._updateCartDetails();
                 }
-            })
+            });
+
+            this.button_remove_cart.on('click', function (e) {
+                e.preventDefault();
+                mi._clearCart();
+            });
         }
 
         _updateCartDetails() {
@@ -147,42 +155,61 @@ jQuery(function ($) {
 
         /* Helper Functions */
         _addItemToCart(id, name, date, count, price, button) {
+            this._loadCart();
+
+            let try_cart_item_counter_increment = false,
+                add_cart_item = false;
+
             for (let i in this.cart) {
                 if (this.cart.hasOwnProperty(i) && this.cart[i].id === id && this.cart[i].date === date) {
                     if (this.cart[i].count <= 8) {
                         this.cart[i].count++;
-                        this._saveCart();
                     }
-                    this._addTableItem(this.cart[i]);
-                    return;
+                    this.cart[i].have_just_been_updated = true;
+                    try_cart_item_counter_increment = true;
+                    break;
                 }
             }
 
-            if (this._totalCartCount() <= 2) {
-                let item = new Item(id, name, date, count, price);
-                this.cart.push(item);
+            if (!(try_cart_item_counter_increment)) {
+                if (this._totalCartCount() <= 2) {
+                    let item = new Item(id, name, date, count, price);
+                    item.have_just_been_updated = true;
+                    this.cart.push(item);
+                    add_cart_item = true
+                } else {
+                    if ($(button).data("popover") === false) {
+                        $(button).popover({
+                            content: 'Vous avez dépassé le nombre d\'événements par panier.',
+                            trigger: 'focus'
+                        });
+                        $(button).popover('show');
+                        $(button).data('popover', true)
+                    }
+                }
+            }
+
+            if (try_cart_item_counter_increment || add_cart_item) {
+                this._clearHTMLCart();
                 this._saveCart();
-                this._addTableItem(item);
-                this._markAddItemButton();
-            } else {
-                if ($(button).data("popover") === false) {
-                    $(button).popover({
-                        content: 'Vous avez dépassé le nombre d\'événements par panier.',
-                        trigger: 'focus'
-                    });
-                    $(button).popover('show');
-                    $(button).data('popover', true)
+
+                for (let i in this.cart) {
+                    this._addTableItem(this.cart[i])
+                }
+
+                if (add_cart_item) {
+                    this._markAddItemButton();
                 }
             }
         }
 
         showTableItem() {
             for (let i in this.cart) {
-                this._addTableItem(this.cart[i], true)
+                this._addTableItem(this.cart[i])
             }
         }
 
-        _addTableItem(item, from_show = false) {
+        _addTableItem(item) {
             window.scrollTo(0, 0);
 
             if (!(this.cart_ele.parent().hasClass('active'))) {
@@ -201,7 +228,16 @@ jQuery(function ($) {
             let input_count_of_item = this.tbody_item_cart.find('input[data_for_selector="' + item.id + item.date + '"]');
 
             if (input_count_of_item.length === 1) {
-                if (!from_show) {
+                if (item.have_just_been_updated !== undefined && item.have_just_been_updated === true) {
+
+                    for (let i in this.cart) {
+                        if (this.cart.hasOwnProperty(i) && this.cart[i].id === item.id && this.cart[i].date === item.date) {
+                            this.cart[i].have_just_been_updated = false;
+                            this._saveCart();
+                            break;
+                        }
+                    }
+
                     input_count_of_item.val(item.count);
                     let principale_tr = input_count_of_item.parents('tr');
                     principale_tr.find('.price').text((item.count * item.price).toFixed(2));
@@ -264,7 +300,16 @@ jQuery(function ($) {
                 )
             ).append(price_count);
 
-            if (!(from_show)) {
+            if (item.have_just_been_updated !== undefined && item.have_just_been_updated === true) {
+
+                for (let i in this.cart) {
+                    if (this.cart.hasOwnProperty(i) && this.cart[i].id === item.id && this.cart[i].date === item.date) {
+                        this.cart[i].have_just_been_updated = false;
+                        this._saveCart();
+                        break;
+                    }
+                }
+
                 tr_tbody_item_cart.addClass('color-yellow');
                 tr_tbody_item_cart.delay(200)
                     .queue(function (next) {
@@ -275,7 +320,10 @@ jQuery(function ($) {
         }
 
         _removeItemFromCart(input_count, item, count) {
+            this._loadCart();
+
             for (let i in this.cart) {
+
                 if (this.cart[i].name === item.name && this.cart[i].date === item.date) {
                     this.cart[i].count = count;
                     if (count === '0') {
@@ -291,7 +339,12 @@ jQuery(function ($) {
                     break;
                 }
             }
+            this._clearHTMLCart();
             this._saveCart();
+
+            for (let i in this.cart) {
+                this._addTableItem(this.cart[i])
+            }
         }
 
         _totalCartCount() {
@@ -315,6 +368,11 @@ jQuery(function ($) {
             this.tbody_item_cart.html('');
             this.row_col_table_item_cart.hide();
             this.cart_ele.parent().removeClass('active');
+            this._updateCartDetails();
+        }
+
+        _clearHTMLCart() {
+            this.tbody_item_cart.html('');
             this._updateCartDetails();
         }
     }
