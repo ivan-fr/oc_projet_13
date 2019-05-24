@@ -157,7 +157,11 @@
                             language: "fr",
                             components: "country:FR"
                         }, function (data) {
-                            me.init(data);
+                            try {
+                                me.init(data);
+                            } catch (e) {
+                                alert(data.status + " " + data.error_message)
+                            }
                         }, "json");
                 }
 
