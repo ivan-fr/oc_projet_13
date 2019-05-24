@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'debug_toolbar',
     'treebeard',
     'widget_tweaks',
     'paypal.standard.ipn',
@@ -54,7 +55,8 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware'
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'oc_projet_13.urls'
@@ -142,3 +144,5 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'ivan.besevic.etudiant@gmail.com'
 EMAIL_HOST_PASSWORD = 'bonjourni32145.3'
 EMAIL_PORT = 587
+
+INTERNAL_IPS = ['127.0.0.1', '18.222.144.239']
