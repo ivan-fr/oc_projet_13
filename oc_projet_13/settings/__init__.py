@@ -145,4 +145,4 @@ EMAIL_HOST_USER = 'ivan.besevic.etudiant@gmail.com'
 EMAIL_HOST_PASSWORD = 'bonjourni32145.3'
 EMAIL_PORT = 587
 
-INTERNAL_IPS = ['127.0.0.1', '18.222.144.239']
+INTERNAL_IPS = ['127.0.0.1']
