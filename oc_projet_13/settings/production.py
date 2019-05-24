@@ -1,3 +1,5 @@
+from . import *
+
 SECRET_KEY = '-~aO;| F;rE[??/w^zcumh(91'
 DEBUG = False
 ALLOWED_HOSTS = ['18.222.144.239']
