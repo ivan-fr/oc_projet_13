@@ -374,6 +374,7 @@ jQuery(function ($) {
             this.row_col_table_item_cart.hide();
             this.cart_ele.parent().removeClass('active');
             this._updateCartDetails();
+            this._markAddItemButton();
         }
 
         _clearHTMLCart() {
