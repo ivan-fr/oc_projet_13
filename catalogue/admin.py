@@ -1,9 +1,19 @@
 from django.contrib import admin
 from django.contrib.contenttypes.admin import GenericTabularInline
+from treebeard.admin import TreeAdmin
+from treebeard.forms import movenodeform_factory
 
 from catalogue.forms import MeetingForm
 from catalogue.models import Meeting, Place, Director, Author, Artist
+from swingtime.models import EventType
 from swingtime.models import Note
+
+
+class EventTypeAdmin(TreeAdmin):
+    form = movenodeform_factory(EventType)
+
+
+admin.site.register(EventType, EventType)
 
 
 class EventNoteInline(GenericTabularInline):
