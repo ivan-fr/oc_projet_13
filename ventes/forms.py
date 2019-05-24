@@ -40,7 +40,7 @@ class CommandeForm(forms.Form):
 
             now = datetime.datetime.now()
 
-            recurrences = self.object.recurrences
+            recurrences = meeting.recurrences
             occurrences = None
 
             if recurrences:
@@ -52,10 +52,10 @@ class CommandeForm(forms.Form):
             if not occurrences:
                 raise forms.ValidationError("Il n'y a pas d'occurence.")
             occurrences = [timezone.make_aware(date.replace(second=0)) for date
-                           in occurrences()]
+                           in occurrences]
             if self.cleaned_data['date'] not in occurrences:
                 raise forms.ValidationError("Mauvaise occurrence.")
         except Meeting.DoesNotExist:
-            raise forms.ValidationError("L'événement n'existe pas.")
+            raise forms.ValidationError("L'événement n'éxiste pas.")
 
         return super(CommandeForm, self).clean()

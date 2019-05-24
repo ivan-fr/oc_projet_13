@@ -88,6 +88,12 @@ jQuery(function ($) {
             }
         }
 
+        _disableEvents() {
+            $(this.options.addtoCartClass).off();
+            this.cart_ele.parent().off();
+            this.button_remove_cart.off();
+        }
+
         _setEvents() {
             let mi = this;
 
