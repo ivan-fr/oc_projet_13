@@ -1,4 +1,5 @@
 {% extends 'oc_projet_13/base.html' %}
+{% load catalogue_tags %}
 
 {% block body %}
     <div class="row mt-4">
@@ -33,7 +34,7 @@
                                     </th>
                                     {% for o in occurrences %}
                                         <td>
-                                            {{ o.day }}/{{ o.month }}/{{ o.year }}</td>
+                                            {{ o.day|leadingzero }}/{{ o.month|leadingzero }}/{{ o.year }}</td>
                                         <td>{{ o.total_price|floatformat:2 }}
                                             euros
                                         </td>

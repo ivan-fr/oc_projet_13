@@ -18,6 +18,11 @@ def twodigitcomma(number):
     return "%.2f" % float(number)
 
 
+@register.filter
+def leadingzero(number):
+    return f"{number:02d}"
+
+
 @register.simple_tag()
 def multiply(x1, x2):
     # you would need to do any localization of the result here
