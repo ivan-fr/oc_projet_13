@@ -7,7 +7,7 @@ from django.conf import settings
 from django.db.models import Q, F, Count, Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, TemplateView
 
 from catalogue.models import Meeting, Place
 from swingtime.models import EventType
@@ -49,6 +49,12 @@ class IndexView(ListView):
         _dict.update(kwargs)
         return super(IndexView, self).get_context_data(object_list=None,
                                                        **_dict)
+
+
+class LegalMentionTemplateView(TemplateView):
+    """ render success payment of a command"""
+
+    template_name = 'catalogue/legal_mention.html'
 
 
 class EventTypeView(ListView):

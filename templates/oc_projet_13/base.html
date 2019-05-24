@@ -104,19 +104,26 @@
 
     <hr class="mb-0">
     <div class="row mx-0 px-4 pt-3 background-grey">
-        <div class="col-3">
+        <div class="col-auto">
             <h6 class="text-uppercase">Réseaux sociaux</h6>
-            <a href="https://github.com/ivan-fr/oc_projet_13"
-               target="_blank">
-                <i class="fab fa-github"></i>
-                Lien github
-            </a>
+            <div>
+                <a href="https://github.com/ivan-fr/oc_projet_13"
+                   target="_blank">
+                    <i class="fab fa-github"></i>
+                    Lien github
+                </a>
+            </div>
+            <div>
+                <a href="{% url 'catalogue:legal_mention' %}">Politique de
+                    Confidentialité</a>
+            </div>
         </div>
+
     </div>
 
     <div class="row mx-0 px-4 pb-3 background-grey">
         <div class="col-8">
-            {% now 'Y' %} © Tous droits réservés.
+            Ivan BESEVIC {% now 'Y' %} © Tous droits réservés.
         </div>
     </div>
 </div>
