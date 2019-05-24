@@ -13,7 +13,7 @@ class EventTypeAdmin(TreeAdmin):
     form = movenodeform_factory(EventType)
 
 
-admin.site.register(EventType, EventType)
+admin.site.register(EventType, EventTypeAdmin)
 
 
 class EventNoteInline(GenericTabularInline):
