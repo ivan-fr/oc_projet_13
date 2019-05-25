@@ -17,13 +17,13 @@ class CommandeForm(forms.Form):
     count = forms.IntegerField(min_value=1, max_value=9)
 
     def clean(self):
-        id = self.cleaned_data['id']
+        if not self.is_valid():
+            raise forms.ValidationError('Formulaire invalide.')
 
-        if not 1 <= self.cleaned_data['count'] <= 9:
-            raise forms.ValidationError('Mauvaise quantité.')
+        _id = self.cleaned_data['id']
 
         try:
-            meeting = Meeting.objects.filter(pk=id) \
+            meeting = Meeting.objects.filter(pk=_id) \
                 .annotate(
                 nombre_de_place_reserve=Coalesce(Sum(
                     F('to_meeting__quantity'),
