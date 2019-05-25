@@ -52,7 +52,7 @@ class IndexView(ListView):
 
 
 class LegalMentionTemplateView(TemplateView):
-    """ render success payment of a command"""
+    """ render legal mention page"""
 
     template_name = 'catalogue/legal_mention.html'
 
