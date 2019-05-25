@@ -10,95 +10,93 @@
                 <div class="card-body"
                      id="formset_commande_container"
                      data-commande-formset-url="{% url 'ventes:commande-formset' %}">
-                    <div class="spinner-grow" role="status">
 
-                        <form action="{% url 'ventes:commande-formset' %}"
-                              method="post"
-                              id="formset_commande">
-                            {% csrf_token %}
-                            {{ formset.management_form }}
-                            <input type="hidden" name="form-sign"
-                                   value="{{ sign }}"
-                                   id="form-sign">
-                            {% for form in formset %}
-                                {% if form.errors %}
-                                    {{ form.errors }}
-                                {% endif %}
-                                {{ form.id.as_hidden }}
-                                <div class="form-row">
-                                    <div class="form-group col-md-5">
-                                        {{ form.name.errors }}
-                                        {{ form.name.label_tag }}
-                                        {{ form.name|add_class:"form-control" }}
-                                    </div>
-                                    <div class="form-group col-md-3">
-                                        {{ form.date.errors }}
-                                        {{ form.date.label_tag }}
-                                        {{ form.date|add_class:"form-control" }}
-                                    </div>
-                                    <div class="form-group col-md-2">
-                                        {{ form.count.errors }}
-                                        {{ form.count.label_tag }}
-                                        {{ form.count|add_class:"form-control count-meeting" }}
-                                    </div>
-                                    <div class="form-group col-md-auto">
-                                        {% for key, value in meetings.items %}
-                                            {% if key == form.id.value %}
-                                                <span class="meeting-price">
+                    <form action="{% url 'ventes:commande-formset' %}"
+                          method="post"
+                          id="formset_commande">
+                        {% csrf_token %}
+                        {{ formset.management_form }}
+                        <input type="hidden" name="form-sign"
+                               value="{{ sign }}"
+                               id="form-sign">
+                        {% for form in formset %}
+                            {% if form.errors %}
+                                {{ form.errors }}
+                            {% endif %}
+                            {{ form.id.as_hidden }}
+                            <div class="form-row">
+                                <div class="form-group col-md-5">
+                                    {{ form.name.errors }}
+                                    {{ form.name.label_tag }}
+                                    {{ form.name|add_class:"form-control" }}
+                                </div>
+                                <div class="form-group col-md-3">
+                                    {{ form.date.errors }}
+                                    {{ form.date.label_tag }}
+                                    {{ form.date|add_class:"form-control" }}
+                                </div>
+                                <div class="form-group col-md-2">
+                                    {{ form.count.errors }}
+                                    {{ form.count.label_tag }}
+                                    {{ form.count|add_class:"form-control count-meeting" }}
+                                </div>
+                                <div class="form-group col-md-auto">
+                                    {% for key, value in meetings.items %}
+                                        {% if key == form.id.value %}
+                                            <span class="meeting-price">
                                                     {% multiply meetings|get_dict_attr:key form.count.value %}
                                                 </span>
-                                                <span class="single-meeting-price"
-                                                      data-single-meeting-price="{{ meetings|get_dict_attr:key }}"></span>
-                                                <i class="fas fa-euro-sign"></i>
-                                            {% endif %}
-                                        {% endfor %}
+                                            <span class="single-meeting-price"
+                                                  data-single-meeting-price="{{ meetings|get_dict_attr:key }}"></span>
+                                            <i class="fas fa-euro-sign"></i>
+                                        {% endif %}
+                                    {% endfor %}
 
-                                    </div>
                                 </div>
-                            {% endfor %}
-
-                            <div class="alert alert-info" role="alert">
-                                Montant total : <span
-                                    class="total-count">0</span> <i
-                                    class="fas fa-euro-sign"></i>
                             </div>
+                        {% endfor %}
 
-                            <input type="submit" class="btn btn-primary"
-                                   value="Passer commande"/>
-                        </form>
+                        <div class="alert alert-info" role="alert">
+                            Montant total : <span
+                                class="total-count">0</span> <i
+                                class="fas fa-euro-sign"></i>
+                        </div>
 
-                        <script>
-                            jQuery(function ($) {
+                        <input type="submit" class="btn btn-primary"
+                               value="Passer commande"/>
+                    </form>
 
-                                function total_price_function() {
-                                    let total_price = 0;
-                                    $('span.meeting-price').each(
-                                        function () {
-                                            total_price += parseFloat($(this).text());
-                                        }
-                                    );
-                                    $('div.alert .total-count').text(total_price.toFixed(2));
+                    <script>
+                        jQuery(function ($) {
+
+                            function total_price_function() {
+                                let total_price = 0;
+                                $('span.meeting-price').each(
+                                    function () {
+                                        total_price += parseFloat($(this).text());
+                                    }
+                                );
+                                $('div.alert .total-count').text(total_price.toFixed(2));
+                            }
+
+                            total_price_function();
+
+                            $('input.count-meeting').on('change', function (e) {
+                                e.preventDefault();
+
+                                if ($(this).val() < 1) {
+                                    $(this).val(1);
+                                } else if ($(this).val() > 9) {
+                                    $(this).val(9);
                                 }
 
+                                let div_price = $(this).parent().parent().find('.form-group:last-child');
+                                div_price.find('.meeting-price').text((parseFloat($(this).val() *
+                                    parseFloat(div_price.find('.single-meeting-price').attr('data-single-meeting-price')))).toFixed(2));
                                 total_price_function();
-
-                                $('input.count-meeting').on('change', function (e) {
-                                    e.preventDefault();
-
-                                    if ($(this).val() < 1) {
-                                        $(this).val(1);
-                                    } else if ($(this).val() > 9) {
-                                        $(this).val(9);
-                                    }
-
-                                    let div_price = $(this).parent().parent().find('.form-group:last-child');
-                                    div_price.find('.meeting-price').text((parseFloat($(this).val() *
-                                        parseFloat(div_price.find('.single-meeting-price').attr('data-single-meeting-price')))).toFixed(2));
-                                    total_price_function();
-                                })
-                            });
-                        </script>
-                    </div>
+                            })
+                        });
+                    </script>
                 </div>
             </div>
         </div>
