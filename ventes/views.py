@@ -54,6 +54,7 @@ class CommandeFormsetView(FormSetView):
 
     @method_decorator(login_required)
     def post(self, request, *args, **kwargs):
+        self.template_name = 'ventes/commande_formset_post.html'
         self.initial = signing.loads(request.POST.get('form-sign'))
         return super(CommandeFormsetView, self).post(request, *args, **kwargs)
 
