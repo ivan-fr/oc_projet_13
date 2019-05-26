@@ -14,13 +14,19 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include, re_path
-from django.conf.urls.static import static
 
 from catalogue import views
 
+
+def trigger_error(request):
+    division_by_zero = 1 / 0
+
+
 urlpatterns = [
+    path('sentry-debug/', trigger_error),
     path('admin/', admin.site.urls),
     path('catalogue/', include('catalogue.urls')),
     path('', views.IndexView.as_view(),
