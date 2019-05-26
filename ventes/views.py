@@ -266,7 +266,7 @@ class TurnoverView(TemplateView):
                 F('from_commande__quantity')
                 * F('from_commande__to_meeting__price'),
                 output_field=DecimalField()
-            ))
+            )).order_by('month')
 
         kwargs = {
             'year': year,
