@@ -25,12 +25,14 @@ class Command(BaseCommand):
 
             i = 0
             for commande in commandes:
-                if commande.payment_status is False and \
+                if commande.enabled and \
+                        commande.payment_status is False and \
                         timezone.make_aware(now) - commande.date >= \
-                        datetime.timedelta(minutes=15):
-                    commande.delete()
+                        datetime.timedelta(minutes=20):
+                    commande.enabled = False
+                    commande.save()
                     i += 1
 
             self.stdout.write(self.style.SUCCESS(
-                f"Il y a {i} commande{'s' if i > 1 else ''} (non payé) supprimé."
+                f"Il y a {i} commande{'s' if i > 1 else ''} (non payé) désactivé."
             ))

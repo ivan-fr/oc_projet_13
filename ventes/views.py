@@ -9,6 +9,7 @@ from django.core import signing
 from django.core.signing import Signer
 from django.db import transaction
 from django.db.models import F, Sum, FloatField, DecimalField
+from django.db.models import Q
 from django.db.models.functions import Coalesce, ExtractDay, ExtractMonth, \
     ExtractYear
 from django.http import Http404
@@ -57,6 +58,20 @@ class CommandeFormsetView(FormSetView):
         self.template_name = 'ventes/commande_formset_post.html'
         self.initial = signing.loads(request.POST.get('form-sign'))
         return super(CommandeFormsetView, self).post(request, *args, **kwargs)
+
+    def formset_invalid(self, formset):
+        self.initial = signing.loads(self.request.POST.get('form-sign'))
+
+        sign = signing.dumps(self.initial)
+
+        ids = tuple(set(_dict['id'] for _dict in self.initial))
+        meetings = dict(
+            Meeting.objects.filter(pk__in=ids).values_list('pk', 'price'))
+        meetings = {str(key): value for key, value in meetings.items()}
+
+        return self.render_to_response(
+            self.get_context_data(formset=formset, meetings=meetings,
+                                  sign=sign))
 
     def formset_valid(self, formset):
         data = {}
@@ -115,7 +130,10 @@ class CommandeMixinView(object):
 
     def get_queryset(self):
         queryset = super(CommandeMixinView, self).get_queryset()
-        return queryset.filter(user=self.request.user) \
+        return queryset.filter(Q(enabled=True) |
+                               (Q(enabled=False) &
+                                Q(payment_status=True)),
+                               user=self.request.user) \
             .prefetch_related("from_commande", 'from_commande__to_meeting') \
             .annotate(
             total_price=Sum(
@@ -150,12 +168,17 @@ class CommandeView(DetailView):
 
     def get_queryset(self):
         queryset = super(CommandeView, self).get_queryset()
-        queryset = queryset.prefetch_related("from_commande",
-                                             'from_commande__to_meeting') \
+        queryset = queryset.filter(
+            Q(enabled=True) |
+            (Q(enabled=False) &
+             Q(payment_status=True))) \
+            .prefetch_related("from_commande",
+                              'from_commande__to_meeting') \
             .annotate(
             total_price=Coalesce(Sum(
                 F('from_commande__quantity')
-                * F('from_commande__to_meeting__price'),
+                * F(
+                    'from_commande__to_meeting__price'),
                 output_field=FloatField()
             ), 0)
         )
@@ -229,15 +252,15 @@ class TurnoverView(TemplateView):
         queryset = Commande.objects \
             .all() \
             .filter(
-            payment_status=True,
-            date__year=year
-        ) \
+            (Q(payment_status=True) & Q(enabled=True)) |
+            (Q(payment_status=True) & Q(too_late_accepted_payment=True)),
+            date__year=year) \
             .prefetch_related("from_commande", 'from_commande__to_meeting') \
             .annotate(
             year=ExtractYear('date'),
             month=ExtractMonth('date'),
-            day=ExtractDay('date'),
-        ).values('year', 'month', 'day') \
+            day=ExtractDay('date')) \
+            .values('year', 'month', 'day') \
             .annotate(
             total_price=Sum(
                 F('from_commande__quantity')

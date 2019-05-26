@@ -136,8 +136,9 @@ class MeetingView(DetailView):
                     filter=Q(
                         to_meeting__date_meeting=timezone.make_aware(
                             v.replace(second=0)
-                        )
-                    )
+                        )) & (Q(to_meeting__from_commande__enabled=True)
+                              | (Q(to_meeting__from_commande__too_late_accepted_payment=True)
+                                 & Q(to_meeting__from_commande__payment_status=True)))
                 ), 0)
                 for i, v in enumerate(occurrences)
             }

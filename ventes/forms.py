@@ -28,6 +28,9 @@ class CommandeForm(forms.Form):
                 nombre_de_place_reserve=Coalesce(Sum(
                     F('to_meeting__quantity'),
                     filter=Q(to_meeting__date_meeting=self.cleaned_data['date'])
+                           & (Q(to_meeting__from_commande__enabled=True)
+                              | (Q(to_meeting__from_commande__too_late_accepted_payment=True)
+                                 & Q(to_meeting__from_commande__payment_status=True)))
                 ), 0)
             ).annotate(
                 place_restante=F('place__space_available')
@@ -35,7 +38,7 @@ class CommandeForm(forms.Form):
                                - self.cleaned_data['count']
             ).first()
 
-            if meeting.place_restante <= 0:
+            if meeting.place_restante < 0:
                 raise forms.ValidationError('Nombre de places dépassées.')
 
             now = datetime.datetime.now()

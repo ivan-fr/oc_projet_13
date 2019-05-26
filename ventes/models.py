@@ -14,6 +14,8 @@ class Commande(models.Model):
                                       through_fields=('from_commande',
                                                       'to_meeting'))
     payment_status = models.BooleanField(default=False)
+    enabled = models.BooleanField(default=True)
+    too_late_accepted_payment = models.BooleanField(default=False)
 
 
 class CommandeMeeting(models.Model):

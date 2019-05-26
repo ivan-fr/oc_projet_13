@@ -69,7 +69,7 @@ class Event(models.Model):
         on_delete=models.CASCADE
     )
 
-    recurrences = RecurrenceField(default=None, null=True,
+    recurrences = RecurrenceField(default=None, null=True, blank=True,
                                   include_dtstart=False)
     notes = GenericRelation(Note, verbose_name=_('notes'))
 

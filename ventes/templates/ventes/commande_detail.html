@@ -16,6 +16,29 @@
         </div>
 
         <div class="card-body">
+            {% if not object.enabled %}
+                {% if object.too_late_accepted_payment %}
+                    <div class="alert alert-warning" role="alert">
+                        Vous avez payé votre commande en retard !<br>
+                        Heureusement nous avons pu enregistrer votre place.<br>
+                        La prochaine fois veillée à respecter les délais.
+                    </div>
+                {% else %}
+                    <div class="alert alert-danger" role="alert">
+                        Vous avez payé votre commande en retard !<br>
+                        Malheureusement nous n'avons pas pu enregistrer votre
+                        place (manque de place ou l'énervement n'est plus
+                        disponible).<br>
+                        Veuillez nous contacter pour un remboursement.
+                    </div>
+                {% endif %}
+            {% elif not object.payment_status %}
+                <div class="alert alert-info" role="alert">
+                    Vos places ont été réservé ! <br>
+                    Vous avez 20 minutes pour payer votre commande.
+                </div>
+            {% endif %}
+
             <ul class="list-group">
                 {% for through in object.from_commande.all %}
                     <li class="list-group-item">{{ through.quantity }}X
