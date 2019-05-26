@@ -268,10 +268,20 @@ class TurnoverView(TemplateView):
                 output_field=DecimalField()
             )).order_by('month')
 
+        by_month = [(dt, list(c)) for dt, c in
+                    itertools.groupby(queryset, group_key)]
+
+        i = 0
+        for dt, occurrences in by_month:
+            total_payment_by_month = 0
+            for occurrence in occurrences:
+                total_payment_by_month += occurrence.get('total_price', 0)
+            by_month[i][1].append(total_payment_by_month)
+            i += 1
+
         kwargs = {
             'year': year,
-            'by_month': [(dt, list(c)) for dt, c in
-                         itertools.groupby(queryset, group_key)],
+            'by_month': by_month,
             'next_year': year + 1,
             'last_year': year - 1
         }
