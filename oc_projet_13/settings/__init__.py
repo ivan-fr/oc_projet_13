@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
     'debug_toolbar',
     'treebeard',
     'widget_tweaks',
@@ -45,7 +46,8 @@ INSTALLED_APPS = [
     'swingtime',
     'catalogue.apps.CatalogueConfig',
     'ventes.apps.VentesConfig',
-    'session.apps.SessionConfig'
+    'session.apps.SessionConfig',
+    'online.apps.OnlineConfig',
 ]
 
 MIDDLEWARE = [
@@ -64,8 +66,7 @@ ROOT_URLCONF = 'oc_projet_13.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
-        ,
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -79,6 +80,15 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'oc_projet_13.wsgi.application'
+ASGI_APPLICATION = 'mysite.routing.application'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
@@ -111,7 +121,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
-LANGUAGE_CODE = 'fr_fr'
+LANGUAGE_CODE = 'fr-FR'
 
 TIME_ZONE = 'Europe/Paris'
 
