@@ -3,5 +3,5 @@ venv/*
 .DS_Store
 .vscode/*
 env/*
-**.pyc
+*/*.pyc
 **/__pycache__/
