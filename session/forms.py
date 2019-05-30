@@ -9,3 +9,7 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta(UserCreationForm.Meta):
         fields = ('username', 'email')
+
+
+class ComposeForm(forms.Form):
+    message = forms.CharField(min_length=2)

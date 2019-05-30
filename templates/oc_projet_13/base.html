@@ -57,6 +57,11 @@
                         Mes Commandes
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'session:inbox' %}">
+                        Mes discussions
+                    </a>
+                </li>
                 {% if request.user.is_superuser %}
                     <li class="nav-item">
                         <a class="nav-link"
@@ -117,6 +122,9 @@
                 <a href="{% url 'catalogue:legal_mention' %}">Politique de
                     Confidentialité</a>
             </div>
+            <div>
+                <a href="{% url 'session:whoisonline' %}">Qui est en ligne ?</a>
+            </div>
         </div>
 
     </div>
@@ -145,6 +153,10 @@
         $('.toast').toast('show');
     });
 </script>
+
+{% block online_js %}
+    <script src="{% static 'session/online.js' %}"></script>
+{% endblock %}
 
 {% block javascript %}
 {% endblock %}

@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     'catalogue.apps.CatalogueConfig',
     'ventes.apps.VentesConfig',
     'session.apps.SessionConfig',
-    'online.apps.OnlineConfig',
 ]
 
 MIDDLEWARE = [
@@ -80,7 +79,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'oc_projet_13.wsgi.application'
-ASGI_APPLICATION = 'mysite.routing.application'
+ASGI_APPLICATION = 'oc_projet_13.routing.application'
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',

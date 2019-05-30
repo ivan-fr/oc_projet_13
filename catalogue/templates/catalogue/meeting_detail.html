@@ -21,7 +21,7 @@
                 <img src="{{ object.photo.url }}" alt="photo meeting">
             {% endif %}
             <p>
-                <span class="badge badge-primary">{{ object.price|floatformat:2 }} euros/pers</span>
+            <h3><span class="badge badge-primary">{{ object.price|floatformat:2 }} euros/pers</span></h3>
             </p>
         </div>
         <div class="col-12 col-lg-8">
@@ -138,8 +138,9 @@
 {% endblock %}
 
 {% block javascript %}
-    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyABktea4rFaWShQm7F25YWXgAuv9f-nFvk"
-            ></script>
+    <script type="text/javascript"
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyABktea4rFaWShQm7F25YWXgAuv9f-nFvk"
+    ></script>
     <script>
         jQuery(function ($) {
             class lol {

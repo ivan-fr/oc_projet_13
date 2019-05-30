@@ -116,7 +116,7 @@ class CommandeFormsetView(FormSetView):
 
 
 class CommandeTemplateView(TemplateView):
-    """ Render the command template """
+    """ Render the command templates """
     template_name = 'ventes/commande.html'
 
 
@@ -240,6 +240,9 @@ class TurnoverView(TemplateView):
     template_name = 'ventes/turnover.html'
 
     def get(self, request, *args, **kwargs):
+        if not request.user.is_superuser:
+            raise Http404()
+
         if self.kwargs.get('year'):
             year = int(self.kwargs.get('year'))
         else:

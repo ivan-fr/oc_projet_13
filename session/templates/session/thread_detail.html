@@ -1,0 +1,44 @@
+{% extends 'oc_projet_13/base.html' %}
+{% load session_tags %}
+{% load static %}
+
+{% block body %}
+    <section class="whoisonline" data-mode="thread">
+        <div class="row mt-4">
+            <div class="col-lg-12 mx-auto">
+                <div class="card border-secondary">
+                    <div class="card-header">Liste des administrateurs</div>
+                    <div class="card-body">
+                        <h4>Discussion avec
+                            <span id="current_username" data-username="{{ user_recipient }}">
+                                {{ user_recipient }}
+                            </span>
+                        </h4>
+                        <p id="user-{{ user_recipient.id }}">
+                            Status : <span class="status"><span
+                                class="badge badge-secondary">||</span> En attente..</span>
+                        </p>
+                        <ul id='thread-items'>
+                            {% for chat in object.chatmessage_set.all %}
+                                <li>{{ chat.message }} via {{ chat.user }}</li>
+                            {% endfor %}
+                        </ul>
+
+                        <form id="thread_form" action="{% url "session:thread" user|thread_get_other_user:object %}"
+                              method='POST'> {% csrf_token %}
+                            {{ form.as_p }}
+                            <input type='submit' class='btn btn-primary'/>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block online_js %}
+    <script src="{% static 'session/whoisonline.js' %}"></script>
+{% endblock %}
+{% block javascript %}
+    <script src="{% static 'session/thread.js' %}"></script>
+{% endblock %}

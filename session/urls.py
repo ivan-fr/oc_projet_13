@@ -1,6 +1,7 @@
 from django.urls import path, re_path
 from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
+from django.contrib.auth.decorators import login_required
 
 from session import views
 
@@ -21,5 +22,8 @@ urlpatterns = [
          name='password_reset_confirm'),
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(),
          name='password_reset_complete'),
-    path('activate/<uidb64>/<token>/', views.activate, name='activate')
+    path('activate/<uidb64>/<token>/', views.activate, name='activate'),
+    path('whoisonline/', views.WhoIsOnlineView.as_view(), name="whoisonline"),
+    path('inbox', login_required(views.InboxView.as_view()), name="inbox"),
+    re_path(r'^thread/(?P<username>[\w.@+-]+)$', login_required(views.ThreadView.as_view()), name="thread"),
 ]

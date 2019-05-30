@@ -36,6 +36,6 @@ urlpatterns = [
     path('commandes/turnover/', views.TurnoverView.as_view(),
          name='commandes-turnover'),
     re_path(r'^commandes/turnover/(?P<year>[\d]+)/$',
-         views.TurnoverView.as_view(),
-         name='commandes-turnover-year')
+            login_required(views.TurnoverView.as_view()),
+            name='commandes-turnover-year')
 ]
