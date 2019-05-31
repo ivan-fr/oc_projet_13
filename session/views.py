@@ -88,7 +88,7 @@ class WhoIsOnlineView(ListView):
 
     def get_queryset(self):
         queryset = super(WhoIsOnlineView, self).get_queryset()
-        queryset.filter(is_superuser=True)
+        queryset = queryset.filter(is_superuser=True)
         return queryset
 
 

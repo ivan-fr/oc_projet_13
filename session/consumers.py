@@ -4,7 +4,7 @@ from channels.exceptions import (
     DenyConnection,
     InvalidChannelLayerError,
 )
-import traceback
+import asyncio
 from channels.db import database_sync_to_async
 from session.models import Thread, ChatMessage
 from asgiref.sync import sync_to_async
@@ -13,76 +13,58 @@ from session.forms import ComposeForm
 
 class WhoIsOnlineConsumer(AsyncJsonWebsocketConsumer):
     groups = ["whoisonline"]
-    user_special_pass = False
 
     async def connect(self):
         await self.accept()
 
-        if not bool(int(self.scope["url_route"]["kwargs"]["thread"])):
+        if bool(int(self.scope["url_route"]["kwargs"]["askmanifest"])):
             await self.channel_layer.group_send(
                 self.groups[0],
                 {
-                    "type": "online.check.presence",
+                    "type": "online.manifest.presence",
                 }
             )
+        else:
+            await self.online_manifest_presence({"from_groud_send": False})
 
-    async def receive_json(self, content, **kwargs):
-        if not self.scope['user'].is_anonymous and self.scope['user'].is_superuser \
-                or self.user_special_pass and not self.scope['user'].is_anonymous:
-            await self.channel_layer.group_send(
-                self.groups[0],
-                {
-                    "type": "online.join",
-                    "user_id": self.scope["user"].pk,
-                    "all_user": content.get('all_user')
-                }
-            )
-        elif content.get('all_user') and not self.scope['user'].is_anonymous and \
-                self.scope['user'].pk in content.get('user_ids'):
-            self.user_special_pass = True
+    async def online_manifest_presence(self, event):
+        if not self.scope['user'].is_anonymous \
+                and self.scope['user'].is_superuser:
             await self.channel_layer.group_send(
                 self.groups[0],
                 {
                     "type": "online.join",
                     "user_id": self.scope["user"].pk,
-                    "all_user": content.get('all_user')
+                    "from_groud_send": event.get("from_groud_send", True)
                 }
             )
-
-    async def online_check_presence(self, event):
-        _dict = {
-            'check': True,
-            'all_user': False
-        }
-
-        if event.get('all_user'):
-            _dict['all_user'] = True
-
-        await self.send_json(_dict)
 
     async def online_join(self, event):
         """
         Called when someone has joined our chat.
         """
         # Send a message down to the client
-        await self.send_json(
-            {
-                "user_id": event['user_id'],
-                "connected": True
-            },
-        )
+        if ((event.get("from_groud_send")) or
+            (not event.get("from_groud_send") and self.scope['user'].pk != event.get("user_id"))) \
+                and bool(int(self.scope["url_route"]["kwargs"]["askmanifest"])):
+            await self.send_json(
+                {
+                    "user_id": event['user_id'],
+                    "connected": True,
+                },
+            )
 
     async def online_leave(self, event):
-        await self.send_json(
-            {
-                "user_id": event["user_id"],
-                "connected": False
-            }
-        )
+        if bool(int(self.scope["url_route"]["kwargs"]["askmanifest"])):
+            await self.send_json(
+                {
+                    "user_id": event["user_id"],
+                    "connected": False
+                }
+            )
 
     async def disconnect(self, code):
-        if not self.scope['user'].is_anonymous and self.scope['user'].is_superuser \
-                or self.user_special_pass and not self.scope['user'].is_anonymous:
+        if not self.scope['user'].is_anonymous and self.scope['user'].is_superuser:
             await self.channel_layer.group_send(
                 self.groups[0],
                 {
@@ -90,6 +72,132 @@ class WhoIsOnlineConsumer(AsyncJsonWebsocketConsumer):
                     "user_id": self.scope['user'].pk,
                 }
             )
+
+
+class WhoIsOnlineThreadConsumer(AsyncJsonWebsocketConsumer):
+    groups = ["whoisonlinethread"]
+
+    async def connect(self):
+        if self.scope["user"].is_anonymous:
+            # Reject the connection
+            await self.close()
+        else:
+            try:
+                if not self.scope['session'].get('listen_thread_group_name', set()):
+                    self.scope['session']['listen_thread_group_name'] = set()
+                for thread_id in self.scope['session'].get('im', {}).keys():
+                    name_group = f"whoisonline_thread_{thread_id}"
+                    self.scope['session']['listen_thread_group_name'].add(name_group)
+                    await self.channel_layer.group_add(name_group, self.channel_name)
+            except AttributeError:
+                raise InvalidChannelLayerError(
+                    "BACKEND is unconfigured or doesn't support groups"
+                )
+            await self.accept()
+
+            for thread_id, recipient_user_id in \
+                    self.scope['session'].get('im', {}).items():
+                await self.online_manifest_presence_thread({
+                    "thread_id": thread_id,
+                    "recipient_user_id": recipient_user_id
+                })
+
+    async def online_synchronise_thread(self, event):
+        if not self.scope['session'].get('im', {}):
+            self.scope['session']['im'] = {}
+        name_group = f"whoisonline_thread_{event['thread_id']}"
+
+        if self.scope['user'].is_authenticated and self.scope['user'].pk == event["from_user_id"]:
+            if not self.scope['session'].get('listen_thread_group_name', set()):
+                self.scope['session']['listen_thread_group_name'] = set()
+            await self.channel_layer.group_add(name_group, self.channel_name)
+            self.scope['session']['listen_thread_group_name'].add(name_group)
+
+        elif self.scope['user'].is_authenticated and self.scope['user'].pk == event["recipient_user_id"]:
+            if event['thread_id'] not in self.scope['session']['im'].keys():
+                self.scope['session']['im'][event['thread_id']] = event["recipient_user_id"]
+                await self.save_session()
+
+            if not self.scope['session'].get('listen_thread_group_name', set()):
+                self.scope['session']['listen_thread_group_name'] = set()
+            await self.channel_layer.group_add(name_group, self.channel_name)
+            self.scope['session']['listen_thread_group_name'].add(name_group)
+
+    async def online_manifest_presence_thread(self, event):
+        if self.scope['user'].is_authenticated and self.scope['user'].pk == event["recipient_user_id"]:
+            await self.channel_layer.group_send(
+                f"whoisonline_thread_{event['thread_id']}",
+                {
+                    "group": f"whoisonline_thread_{event['thread_id']}",
+                    "type": "online.join",
+                    "user_id": self.scope["user"].pk,
+                }
+            )
+
+    async def online_clean_im(self, event):
+        if self.scope['user'].is_authenticated and self.scope['user'].pk == event["recipient_user_id"]:
+            if self.scope['session'].get('im', {}):
+                try:
+                    del self.scope['session']['im'][event["thread_id"]]
+                except KeyError:
+                    del self.scope['session']['im'][str(event["thread_id"])]
+                # await self.channel_layer.group_discard(event['group_name'], self.channel_name)
+                # self.scope['session']['listen_thread_group_name'].remove(event['group_name'])
+            await self.save_session()
+
+    async def online_join(self, event):
+        """
+        Called when someone has joined our chat.
+        """
+        # Send a message down to the client
+        if self.scope['user'].pk != event['user_id']:
+            await self.send_json(
+                {
+                    "groups": event['group'],
+                    "user_id": event['user_id'],
+                    "connected": True,
+                },
+            )
+
+    async def online_leave(self, event):
+        if self.scope['user'].pk != event['user_id']:
+            await self.send_json(
+                {
+                    "user_id": event["user_id"],
+                    "connected": False,
+                    "groups": event['group']
+                }
+            )
+
+    async def disconnect(self, code):
+        if self.scope['session']['listen_thread_group_name']:
+            try:
+                for i, group in enumerate(self.scope['session']['listen_thread_group_name']):
+                    await self.channel_layer.group_discard(group, self.channel_name)
+                    await self.channel_layer.group_send(
+                        group,
+                        {
+                            "group": group,
+                            "type": "online.leave",
+                            "user_id": self.scope['user'].pk,
+                        }
+                    )
+                del self.scope['session']['listen_thread_group_name']
+                await self.save_session()
+            except AttributeError:
+                raise InvalidChannelLayerError(
+                    "BACKEND is unconfigured or doesn't support groups"
+                )
+
+    @database_sync_to_async
+    def save_session(self):
+        before = self.scope['session'].get('listen_thread_group_name', set())
+        try:
+            del self.scope['session']['listen_thread_group_name']
+        except KeyError:
+            pass
+        self.scope['session'].save()
+        self.scope['session']['listen_thread_group_name'] = before
 
 
 class ThreadConsumer(AsyncJsonWebsocketConsumer):
@@ -124,11 +232,27 @@ class ThreadConsumer(AsyncJsonWebsocketConsumer):
 
     async def connect(self):
         await self.accept()
+        if self.thread.first == self.scope['user']:
+            recipient_user_id = self.thread.second.pk
+        else:
+            recipient_user_id = self.thread.first.pk
+
         await self.channel_layer.group_send(
-            "whoisonline",
+            "whoisonlinethread",
             {
-                "type": "online.check.presence",
-                "all_user": True
+                "type": "online.synchronise.thread",
+                "from_user_id": self.scope['user'].pk,
+                "recipient_user_id": recipient_user_id,
+                "thread_id": self.thread.pk
+            }
+        )
+        await asyncio.sleep(1)
+        await self.channel_layer.group_send(
+            "whoisonlinethread",
+            {
+                "type": "online.manifest.presence.thread",
+                "recipient_user_id": recipient_user_id,
+                "thread_id": self.thread.pk
             }
         )
 
@@ -164,6 +288,25 @@ class ThreadConsumer(AsyncJsonWebsocketConsumer):
             "message": event['message'],
             "errors_form": event['errors_form']
         })
+
+    async def disconnect(self, code):
+        if self.thread.first == self.scope['user']:
+            recipient_user_id = self.thread.second.pk
+        else:
+            recipient_user_id = self.thread.first.pk
+
+        g = f"whoisonline_thread_{self.thread.pk}"
+
+        await self.channel_layer.group_send(
+            g,
+            {
+                "type": "online.clean.im",
+                "from_user_id": self.scope['user'].pk,
+                "recipient_user_id": recipient_user_id,
+                "thread_id": self.thread.pk,
+                "group_name": g
+            }
+        )
 
     @database_sync_to_async
     def get_thread(self):

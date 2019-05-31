@@ -11,7 +11,7 @@
                     <div class="card-body">
                         <h4>Discussion avec
                             <span id="current_username" data-username="{{ user_recipient }}">
-                                {{ user_recipient }}
+                                {{ user_recipient }} me {{ user.pk }} avec {{ user_recipient.pk }}, t_id : {{ object.pk }}
                             </span>
                         </h4>
                         <p id="user-{{ user_recipient.id }}">
@@ -36,9 +36,6 @@
     </section>
 {% endblock %}
 
-{% block online_js %}
-    <script src="{% static 'session/whoisonline.js' %}"></script>
-{% endblock %}
 {% block javascript %}
     <script src="{% static 'session/thread.js' %}"></script>
 {% endblock %}

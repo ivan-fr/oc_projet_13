@@ -4,7 +4,7 @@ jQuery(function ($) {
     let ws_path = ws_scheme + '://' + window.location.host + "/ws/session/thread/" + $.trim($('span#current_username').attr('data-username'));
     console.log("Connecting to " + ws_path);
 
-    let threadsocket = new WebSocket(ws_path);
+    let threadsocket = new ReconnectingWebSocket(ws_path);
 
     function thread_form_listener(e) {
         e.preventDefault();

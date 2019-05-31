@@ -3,22 +3,20 @@ jQuery(function ($) {
     let ws_scheme = window.location.protocol === "https:" ? "wss" : "ws",
         ws_path;
 
+    ws_path = ws_scheme + '://' + window.location.host + "/ws/session/whoisonlinethread";
+    console.log("Connecting to " + ws_path);
+    let onlinethreadsocket = new WebSocket(ws_path);
+
     let environment = {},
         mode = $('section.whoisonline').attr('data-mode'),
         start_id_selector = null;
 
-    if (mode === "superuser_list") {
-        ws_path = ws_scheme + '://' + window.location.host + "/ws/session/whoisonline/1";
-        start_id_selector = "superuser-";
-        $('tr[id^="' + start_id_selector + '"]').each(function (i, element) {
+    if (mode === "thread") {
+        start_id_selector = "user-";
+        $('p[id^="' + start_id_selector + '"]').each(function (i, element) {
             environment[$(element).attr('id')] = {"online": false, "timeout": null};
         });
-    } else {
-        ws_path = ws_scheme + '://' + window.location.host + "/ws/session/whoisonline/0";
     }
-
-    console.log("Connecting to " + ws_path);
-    let onlinesocket = new ReconnectingWebSocket(ws_path);
 
     setTimeout(function () {
         $.each(environment, function (key, element) {
@@ -28,13 +26,15 @@ jQuery(function ($) {
         })
     }, 4000);
 
-    onlinesocket.onopen = function () {
-        console.log("Connected to online socket");
+
+    // Helpful debugging
+    onlinethreadsocket.onopen = function () {
+        console.log("Connected to onlinethread socket");
     };
 
-    onlinesocket.onmessage = function (e) {
+    onlinethreadsocket.onmessage = function (e) {
         let data = JSON.parse(e.data);
-        console.log("whoisonline", data);
+        console.log("onlinethreadsocket", data);
 
         let select_environment = environment[start_id_selector + data.user_id];
 
@@ -67,11 +67,12 @@ jQuery(function ($) {
         }
     };
 
-    onlinesocket.onerror = function (e) {
-        console.log("error", e)
+    onlinethreadsocket.onerror = function (e) {
+        console.log("error", e);
+        onlinethreadsocket.automaticOpen = false;
     };
 
-    onlinesocket.onclose = function (e) {
-        console.log("Disconnected from online socket");
+    onlinethreadsocket.onclose = function (e) {
+        console.log("Disconnected from onlinethread socket");
     };
 });
