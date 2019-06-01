@@ -154,12 +154,11 @@
     });
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.js"></script>
+{% block javascript %}
+{% endblock %}
 {% block online_js %}
     <script src="{% static 'session/whoisonline.js' %}"></script>
     <script src="{% static 'session/whoisonlinethread.js' %}"></script>
-{% endblock %}
-
-{% block javascript %}
 {% endblock %}
 </body>
 </html>

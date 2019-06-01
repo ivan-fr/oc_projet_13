@@ -82,29 +82,18 @@ class WhoIsOnlineThreadConsumer(AsyncJsonWebsocketConsumer):
             # Reject the connection
             await self.close()
         else:
-            try:
-                if not self.scope['session'].get('listen_thread_group_name', set()):
-                    self.scope['session']['listen_thread_group_name'] = set()
-                for thread_id in self.scope['session'].get('im', {}).keys():
-                    name_group = f"whoisonline_thread_{thread_id}"
-                    self.scope['session']['listen_thread_group_name'].add(name_group)
-                    await self.channel_layer.group_add(name_group, self.channel_name)
-            except AttributeError:
-                raise InvalidChannelLayerError(
-                    "BACKEND is unconfigured or doesn't support groups"
-                )
             await self.accept()
 
-            for thread_id, recipient_user_id in \
-                    self.scope['session'].get('im', {}).items():
-                await self.online_manifest_presence_thread({
-                    "thread_id": thread_id,
-                    "recipient_user_id": recipient_user_id
-                })
+            # je me connect puis je demande à mes threads de se synchronysé si ils sont en thread avec moi.
+            for thread in await self.get_threads_by_user():
+                await self.channel_layer.group_send(
+                    f'thread_{thread.pk}',
+                    {
+                        "type": "thread.synchronise"
+                    }
+                )
 
     async def online_synchronise_thread(self, event):
-        if not self.scope['session'].get('im', {}):
-            self.scope['session']['im'] = {}
         name_group = f"whoisonline_thread_{event['thread_id']}"
 
         if self.scope['user'].is_authenticated and self.scope['user'].pk == event["from_user_id"]:
@@ -114,10 +103,6 @@ class WhoIsOnlineThreadConsumer(AsyncJsonWebsocketConsumer):
             self.scope['session']['listen_thread_group_name'].add(name_group)
 
         elif self.scope['user'].is_authenticated and self.scope['user'].pk == event["recipient_user_id"]:
-            if event['thread_id'] not in self.scope['session']['im'].keys():
-                self.scope['session']['im'][event['thread_id']] = event["recipient_user_id"]
-                await self.save_session()
-
             if not self.scope['session'].get('listen_thread_group_name', set()):
                 self.scope['session']['listen_thread_group_name'] = set()
             await self.channel_layer.group_add(name_group, self.channel_name)
@@ -128,7 +113,6 @@ class WhoIsOnlineThreadConsumer(AsyncJsonWebsocketConsumer):
             await self.channel_layer.group_send(
                 f"whoisonline_thread_{event['thread_id']}",
                 {
-                    "group": f"whoisonline_thread_{event['thread_id']}",
                     "type": "online.join",
                     "user_id": self.scope["user"].pk,
                 }
@@ -136,14 +120,11 @@ class WhoIsOnlineThreadConsumer(AsyncJsonWebsocketConsumer):
 
     async def online_clean_im(self, event):
         if self.scope['user'].is_authenticated and self.scope['user'].pk == event["recipient_user_id"]:
-            if self.scope['session'].get('im', {}):
-                try:
-                    del self.scope['session']['im'][event["thread_id"]]
-                except KeyError:
-                    del self.scope['session']['im'][str(event["thread_id"])]
-                # await self.channel_layer.group_discard(event['group_name'], self.channel_name)
-                # self.scope['session']['listen_thread_group_name'].remove(event['group_name'])
-            await self.save_session()
+            await self.channel_layer.group_discard(event['group_name'], self.channel_name)
+            try:
+                self.scope['session']['listen_thread_group_name'].remove(event['group_name'])
+            except ValueError:
+                pass
 
     async def online_join(self, event):
         """
@@ -153,51 +134,40 @@ class WhoIsOnlineThreadConsumer(AsyncJsonWebsocketConsumer):
         if self.scope['user'].pk != event['user_id']:
             await self.send_json(
                 {
-                    "groups": event['group'],
                     "user_id": event['user_id'],
                     "connected": True,
                 },
             )
 
     async def online_leave(self, event):
-        if self.scope['user'].pk != event['user_id']:
+        if self.scope['user'].pk != event['user_id'] and bool(int(self.scope["url_route"]["kwargs"]["onthreadpage"])):
             await self.send_json(
                 {
                     "user_id": event["user_id"],
                     "connected": False,
-                    "groups": event['group']
                 }
             )
 
     async def disconnect(self, code):
-        if self.scope['session']['listen_thread_group_name']:
+        if self.scope['session'].get('listen_thread_group_name'):
             try:
                 for i, group in enumerate(self.scope['session']['listen_thread_group_name']):
                     await self.channel_layer.group_discard(group, self.channel_name)
                     await self.channel_layer.group_send(
                         group,
                         {
-                            "group": group,
                             "type": "online.leave",
                             "user_id": self.scope['user'].pk,
                         }
                     )
-                del self.scope['session']['listen_thread_group_name']
-                await self.save_session()
             except AttributeError:
                 raise InvalidChannelLayerError(
                     "BACKEND is unconfigured or doesn't support groups"
                 )
 
     @database_sync_to_async
-    def save_session(self):
-        before = self.scope['session'].get('listen_thread_group_name', set())
-        try:
-            del self.scope['session']['listen_thread_group_name']
-        except KeyError:
-            pass
-        self.scope['session'].save()
-        self.scope['session']['listen_thread_group_name'] = before
+    def get_threads_by_user(self):
+        return Thread.objects.by_user(self.scope['user'])
 
 
 class ThreadConsumer(AsyncJsonWebsocketConsumer):
@@ -232,6 +202,9 @@ class ThreadConsumer(AsyncJsonWebsocketConsumer):
 
     async def connect(self):
         await self.accept()
+        # await self.thread_synchronise({})
+
+    async def thread_synchronise(self, event):
         if self.thread.first == self.scope['user']:
             recipient_user_id = self.thread.second.pk
         else:
@@ -246,9 +219,11 @@ class ThreadConsumer(AsyncJsonWebsocketConsumer):
                 "thread_id": self.thread.pk
             }
         )
+
         await asyncio.sleep(1)
+
         await self.channel_layer.group_send(
-            "whoisonlinethread",
+            f"whoisonline_thread_{self.thread.pk}",
             {
                 "type": "online.manifest.presence.thread",
                 "recipient_user_id": recipient_user_id,
@@ -269,6 +244,7 @@ class ThreadConsumer(AsyncJsonWebsocketConsumer):
                     {
                         "type": "thread.send.message",
                         "username": self.scope["user"].username,
+                        "user_id": self.scope["user"].pk,
                         "message": msg,
                         "errors_form": errors
                     }
@@ -277,6 +253,7 @@ class ThreadConsumer(AsyncJsonWebsocketConsumer):
                 errors = validate_form[0]
                 event = {
                     "username": self.scope["user"].username,
+                    "user_id": self.scope["user"].pk,
                     "message": msg,
                     "errors_form": errors
                 }
@@ -286,6 +263,7 @@ class ThreadConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({
             "username": event['username'],
             "message": event['message'],
+            "user_id": event['user_id'],
             "errors_form": event['errors_form']
         })
 
@@ -301,7 +279,6 @@ class ThreadConsumer(AsyncJsonWebsocketConsumer):
             g,
             {
                 "type": "online.clean.im",
-                "from_user_id": self.scope['user'].pk,
                 "recipient_user_id": recipient_user_id,
                 "thread_id": self.thread.pk,
                 "group_name": g

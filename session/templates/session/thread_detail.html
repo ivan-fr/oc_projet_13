@@ -11,18 +11,30 @@
                     <div class="card-body">
                         <h4>Discussion avec
                             <span id="current_username" data-username="{{ user_recipient }}">
-                                {{ user_recipient }} me {{ user.pk }} avec {{ user_recipient.pk }}, t_id : {{ object.pk }}
-                            </span>
+                                {{ user_recipient }} thread id : {{ object.pk }}, moi id : {{ user.pk }}, destinataire id : {{ user_recipient.pk }}
+                             </span>
                         </h4>
                         <p id="user-{{ user_recipient.id }}">
                             Status : <span class="status"><span
                                 class="badge badge-secondary">||</span> En attente..</span>
                         </p>
-                        <ul id='thread-items'>
+                        <div id='thread-items'>
                             {% for chat in object.chatmessage_set.all %}
-                                <li>{{ chat.message }} via {{ chat.user }}</li>
+                                {% if user_recipient == chat.user %}
+                                    <div class="row justify-content-end">
+                                        <div class="col-6 alert alert-success">
+                                            {{ chat.message }}
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="row justify-content-start">
+                                        <div class="col-6 alert alert-success">
+                                            {{ chat.message }}
+                                        </div>
+                                    </div>
+                                {% endif %}
                             {% endfor %}
-                        </ul>
+                        </div>
 
                         <form id="thread_form" action="{% url "session:thread" user|thread_get_other_user:object %}"
                               method='POST'> {% csrf_token %}
@@ -34,8 +46,4 @@
             </div>
         </div>
     </section>
-{% endblock %}
-
-{% block javascript %}
-    <script src="{% static 'session/thread.js' %}"></script>
 {% endblock %}
