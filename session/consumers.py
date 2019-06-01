@@ -140,13 +140,21 @@ class WhoIsOnlineThreadConsumer(AsyncJsonWebsocketConsumer):
             )
 
     async def online_leave(self, event):
-        if self.scope['user'].pk != event['user_id'] and bool(int(self.scope["url_route"]["kwargs"]["onthreadpage"])):
+        if self.scope['user'].pk != event['user_id'] and bool(int(self.scope["url_route"]["kwargs"]["thread_pk"])):
             await self.send_json(
                 {
                     "user_id": event["user_id"],
                     "connected": False,
                 }
             )
+
+    async def online_manifest_notification_thread(self, event):
+        if self.scope['user'].is_authenticated and self.scope['user'].pk == event["recipient_user_id"] \
+                and int(self.scope["url_route"]["kwargs"]["thread_pk"]) != event['thread_id']:
+            await self.send_json({
+                "notification": True,
+                "username": event['username'],
+            })
 
     async def disconnect(self, code):
         if self.scope['session'].get('listen_thread_group_name'):
@@ -200,22 +208,13 @@ class ThreadConsumer(AsyncJsonWebsocketConsumer):
             except DenyConnection:
                 await self.close()
 
-    async def connect(self):
-        await self.accept()
-        # await self.thread_synchronise({})
-
     async def thread_synchronise(self, event):
-        if self.thread.first == self.scope['user']:
-            recipient_user_id = self.thread.second.pk
-        else:
-            recipient_user_id = self.thread.first.pk
-
         await self.channel_layer.group_send(
             "whoisonlinethread",
             {
                 "type": "online.synchronise.thread",
                 "from_user_id": self.scope['user'].pk,
-                "recipient_user_id": recipient_user_id,
+                "recipient_user_id": await self.thread_get_recipient_user(),
                 "thread_id": self.thread.pk
             }
         )
@@ -226,7 +225,7 @@ class ThreadConsumer(AsyncJsonWebsocketConsumer):
             f"whoisonline_thread_{self.thread.pk}",
             {
                 "type": "online.manifest.presence.thread",
-                "recipient_user_id": recipient_user_id,
+                "recipient_user_id": await self.thread_get_recipient_user(),
                 "thread_id": self.thread.pk
             }
         )
@@ -249,6 +248,8 @@ class ThreadConsumer(AsyncJsonWebsocketConsumer):
                         "errors_form": errors
                     }
                 )
+
+                await self.thread_notification()
             else:
                 errors = validate_form[0]
                 event = {
@@ -267,19 +268,31 @@ class ThreadConsumer(AsyncJsonWebsocketConsumer):
             "errors_form": event['errors_form']
         })
 
-    async def disconnect(self, code):
-        if self.thread.first == self.scope['user']:
-            recipient_user_id = self.thread.second.pk
-        else:
-            recipient_user_id = self.thread.first.pk
+    async def thread_notification(self):
+        await self.channel_layer.group_send(
+            f"whoisonline_thread_{self.thread.pk}",
+            {
+                "type": "online.manifest.notification.thread",
+                "recipient_user_id": await self.thread_get_recipient_user(),
+                "username": self.scope['user'].username,
+                "thread_id": self.thread.pk
+            }
+        )
 
+    async def thread_get_recipient_user(self):
+        if self.thread.first == self.scope['user']:
+            return self.thread.second.pk
+        else:
+            return self.thread.first.pk
+
+    async def disconnect(self, code):
         g = f"whoisonline_thread_{self.thread.pk}"
 
         await self.channel_layer.group_send(
             g,
             {
                 "type": "online.clean.im",
-                "recipient_user_id": recipient_user_id,
+                "recipient_user_id": await self.thread_get_recipient_user(),
                 "thread_id": self.thread.pk,
                 "group_name": g
             }

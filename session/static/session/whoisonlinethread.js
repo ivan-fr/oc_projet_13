@@ -117,6 +117,25 @@ jQuery(function ($) {
             let data = JSON.parse(e.data);
             console.log("onlinethreadsocket", data);
 
+            if (data.notification) {
+                $('body').prepend('    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true"\n' +
+                    '         data-autohide="false"\n' +
+                    '         style="top:65px; left: 10px; position: absolute; z-index: 1;">\n' +
+                    '        <div class="toast-header">\n' +
+                    '            <strong class="mr-auto text-primary">Information</strong>\n' +
+                    '            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast"\n' +
+                    '                    aria-label="Close">\n' +
+                    '                <span aria-hidden="true">&times;</span>\n' +
+                    '            </button>\n' +
+                    '        </div>\n' +
+                    '        <div class="toast-body">\n' +
+                    '            Vous avez reçu un message de la part de ' + data.username +
+                    '        </div>\n' +
+                    '    </div>');
+                $('.toast').toast('show');
+                return;
+            }
+
             let select_environment = environment[start_id_selector + data.user_id];
 
             if (select_environment === undefined) {
@@ -169,7 +188,7 @@ jQuery(function ($) {
         setTimeout(function () {
             if (threadsocket.readyState === WebSocket.OPEN) {
                 console.log("Connecting to " + ws_path);
-                onlinethreadsocket = new WebSocket(ws_path + '/1');
+                onlinethreadsocket = new WebSocket(ws_path + '/' + $("#thread-items").attr("data-thread-id"));
                 initonlinethreadsocket();
             }
 

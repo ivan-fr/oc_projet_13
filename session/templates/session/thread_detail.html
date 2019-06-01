@@ -11,14 +11,14 @@
                     <div class="card-body">
                         <h4>Discussion avec
                             <span id="current_username" data-username="{{ user_recipient }}">
-                                {{ user_recipient }} thread id : {{ object.pk }}, moi id : {{ user.pk }}, destinataire id : {{ user_recipient.pk }}
+                                {{ user_recipient }}
                              </span>
                         </h4>
                         <p id="user-{{ user_recipient.id }}">
                             Status : <span class="status"><span
                                 class="badge badge-secondary">||</span> En attente..</span>
                         </p>
-                        <div id='thread-items'>
+                        <div id='thread-items' data-thread-id="{{ object.pk }}">
                             {% for chat in object.chatmessage_set.all %}
                                 {% if user_recipient == chat.user %}
                                     <div class="row justify-content-end">
