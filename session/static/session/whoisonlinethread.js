@@ -43,7 +43,7 @@ jQuery(function ($) {
         threadsocket.onmessage = function (e) {
             console.log("threadsocket", e.data);
             let data = JSON.parse(e.data);
-            let user_id;
+            let user_recipient_id;
             if (data.errors_form !== null) {
                 data.errors_form.forEach(function (element) {
                     let parent_input = document.getElementById("id_" + element[0]).parentNode;
@@ -63,9 +63,9 @@ jQuery(function ($) {
                     id_recipient = $(element).attr('id');
                 });
 
-                user_id = parseInt(regex.exec(id_recipient)[1]);
+                user_recipient_id = parseInt(regex.exec(id_recipient)[1]);
 
-                if (data.user_id !== user_id) {
+                if (data.user_id !== user_recipient_id) {
                     $('div#thread-items').append(
                         '<div class="row justify-content-start"> ' +
                         '<div class="col-6 alert alert-success">' +
@@ -76,12 +76,15 @@ jQuery(function ($) {
                 } else {
                     $('div#thread-items').append(
                         '<div class="row justify-content-end"> ' +
-                        '<div class="col-6 alert alert-success">' +
+                        '<div class="col-6 alert alert-primary">' +
                         data.message +
                         '</div>' +
                         '</div>'
                     );
                 }
+
+                let div_thread = document.getElementById('thread-items');
+                div_thread.scrollTop = div_thread.scrollHeight - div_thread.clientHeight;
             }
         };
 
@@ -118,21 +121,51 @@ jQuery(function ($) {
             console.log("onlinethreadsocket", data);
 
             if (data.notification) {
-                $('body').prepend('    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true"\n' +
-                    '         data-autohide="false"\n' +
-                    '         style="top:65px; left: 10px; position: absolute; z-index: 1;">\n' +
-                    '        <div class="toast-header">\n' +
-                    '            <strong class="mr-auto text-primary">Information</strong>\n' +
-                    '            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast"\n' +
-                    '                    aria-label="Close">\n' +
-                    '                <span aria-hidden="true">&times;</span>\n' +
-                    '            </button>\n' +
-                    '        </div>\n' +
-                    '        <div class="toast-body">\n' +
-                    '            Vous avez reçu un message de la part de ' + data.username +
-                    '        </div>\n' +
-                    '    </div>');
-                $('.toast').toast('show');
+                let message = 'Vous avez reçu un message de la part de <a href="' + data.thread_url + '">' + data.username + '.</a>';
+                let body_notification = $('body').find("#notification");
+                if (!(body_notification.length)) {
+                    $('body').prepend(
+                        '  <div style="position: absolute; top:65px; left: 10px; z-index: 1;" id="notification">' +
+                        '    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true"\n' +
+                        '         data-autohide="false">\n' +
+                        '        <div class="toast-header">\n' +
+                        '            <strong class="mr-auto text-primary">Information</strong>\n' +
+                        '            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast"\n' +
+                        '                    aria-label="Close">\n' +
+                        '                <span aria-hidden="true">&times;</span>\n' +
+                        '            </button>\n' +
+                        '        </div>\n' +
+                        '        <div class="toast-body">\n' +
+                        message +
+                        '        </div>\n' +
+                        '    </div>' +
+                        '</div>');
+                } else {
+                    body_notification.prepend(
+                        '    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true"\n' +
+                        '         data-autohide="false">\n' +
+                        '        <div class="toast-header">\n' +
+                        '            <strong class="mr-auto text-primary">Information</strong>\n' +
+                        '            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast"\n' +
+                        '                    aria-label="Close">\n' +
+                        '                <span aria-hidden="true">&times;</span>\n' +
+                        '            </button>\n' +
+                        '        </div>\n' +
+                        '        <div class="toast-body">\n' +
+                        message +
+                        '        </div>\n' +
+                        '    </div>'
+                    )
+                }
+
+                $('.toast').each(function () {
+                    if (!($(this).hasClass('desactivate'))) {
+                        $(this).toast('show');
+                        $(this).on('hide.bs.toast', function () {
+                            $(this).addClass("desactivate")
+                        });
+                    }
+                });
                 return;
             }
 

@@ -22,7 +22,7 @@
                             {% for chat in object.chatmessage_set.all %}
                                 {% if user_recipient == chat.user %}
                                     <div class="row justify-content-end">
-                                        <div class="col-6 alert alert-success">
+                                        <div class="col-6 alert alert-primary">
                                             {{ chat.message }}
                                         </div>
                                     </div>
@@ -46,4 +46,11 @@
             </div>
         </div>
     </section>
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        let div_thread = document.getElementById('thread-items');
+        div_thread.scrollTop = div_thread.scrollHeight - div_thread.clientHeight;
+    </script>
 {% endblock %}

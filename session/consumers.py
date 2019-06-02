@@ -9,6 +9,7 @@ from channels.db import database_sync_to_async
 from session.models import Thread, ChatMessage
 from asgiref.sync import sync_to_async
 from session.forms import ComposeForm
+from django.urls import reverse
 
 
 class WhoIsOnlineConsumer(AsyncJsonWebsocketConsumer):
@@ -108,16 +109,6 @@ class WhoIsOnlineThreadConsumer(AsyncJsonWebsocketConsumer):
             await self.channel_layer.group_add(name_group, self.channel_name)
             self.scope['session']['listen_thread_group_name'].add(name_group)
 
-    async def online_manifest_presence_thread(self, event):
-        if self.scope['user'].is_authenticated and self.scope['user'].pk == event["recipient_user_id"]:
-            await self.channel_layer.group_send(
-                f"whoisonline_thread_{event['thread_id']}",
-                {
-                    "type": "online.join",
-                    "user_id": self.scope["user"].pk,
-                }
-            )
-
     async def online_clean_im(self, event):
         if self.scope['user'].is_authenticated and self.scope['user'].pk == event["recipient_user_id"]:
             await self.channel_layer.group_discard(event['group_name'], self.channel_name)
@@ -131,10 +122,10 @@ class WhoIsOnlineThreadConsumer(AsyncJsonWebsocketConsumer):
         Called when someone has joined our chat.
         """
         # Send a message down to the client
-        if self.scope['user'].pk != event['user_id']:
+        if self.scope['user'].pk != event['recipient_user_id']:
             await self.send_json(
                 {
-                    "user_id": event['user_id'],
+                    "user_id": event['recipient_user_id'],
                     "connected": True,
                 },
             )
@@ -154,6 +145,11 @@ class WhoIsOnlineThreadConsumer(AsyncJsonWebsocketConsumer):
             await self.send_json({
                 "notification": True,
                 "username": event['username'],
+                'thread_url': await sync_to_async(reverse)(
+                    'session:thread',
+                    kwargs={
+                        'username': event['username'],
+                    })
             })
 
     async def disconnect(self, code):
@@ -224,7 +220,7 @@ class ThreadConsumer(AsyncJsonWebsocketConsumer):
         await self.channel_layer.group_send(
             f"whoisonline_thread_{self.thread.pk}",
             {
-                "type": "online.manifest.presence.thread",
+                "type": "online.join",
                 "recipient_user_id": await self.thread_get_recipient_user(),
                 "thread_id": self.thread.pk
             }
@@ -279,12 +275,6 @@ class ThreadConsumer(AsyncJsonWebsocketConsumer):
             }
         )
 
-    async def thread_get_recipient_user(self):
-        if self.thread.first == self.scope['user']:
-            return self.thread.second.pk
-        else:
-            return self.thread.first.pk
-
     async def disconnect(self, code):
         g = f"whoisonline_thread_{self.thread.pk}"
 
@@ -297,6 +287,12 @@ class ThreadConsumer(AsyncJsonWebsocketConsumer):
                 "group_name": g
             }
         )
+
+    async def thread_get_recipient_user(self):
+        if self.thread.first == self.scope['user']:
+            return self.thread.second.pk
+        else:
+            return self.thread.first.pk
 
     @database_sync_to_async
     def get_thread(self):
