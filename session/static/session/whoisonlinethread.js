@@ -41,7 +41,6 @@ jQuery(function ($) {
         };
 
         threadsocket.onmessage = function (e) {
-            console.log("threadsocket", e.data);
             let data = JSON.parse(e.data);
             let user_recipient_id;
             if (data.errors_form !== null) {
