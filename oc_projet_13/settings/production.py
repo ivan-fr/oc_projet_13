@@ -2,7 +2,7 @@ from . import *
 
 SECRET_KEY = '-~aO;| F;rE[??/w^zcumh(91'
 DEBUG = False
-ALLOWED_HOSTS = ['3.16.215.144', '172.31.41.253']
+ALLOWED_HOSTS = ['3.16.215.144']
 
 DATABASES = {
     'default': {
@@ -24,13 +24,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
     'treebeard',
     'widget_tweaks',
     'paypal.standard.ipn',
     'swingtime',
     'catalogue.apps.CatalogueConfig',
     'ventes.apps.VentesConfig',
-    'session.apps.SessionConfig'
+    'session.apps.SessionConfig',
 ]
 
 MIDDLEWARE = [
