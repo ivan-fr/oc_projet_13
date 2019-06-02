@@ -23,9 +23,9 @@ BASE_DIR = os.path.dirname(
 SECRET_KEY = 'k@#o6=7oc^9!u0g!#-+=umdu&&&g&#%fy_838oj0ya8#mjpxzs'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['3.16.215.144', '127.0.0.1']
+ALLOWED_HOSTS = ['51e08ba4.ngrok.io', '127.0.0.1']
 
 # Application definition
 
@@ -92,12 +92,8 @@ CHANNEL_LAYERS = {
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        "NAME": "oc_projet_13",
-        "USER": "ivan",
-        "PASSWORD": "hWfY7Uv82k7L9f2Sr._.",
-        "HOST": "localhost",
-        "PORT": "5432",
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
