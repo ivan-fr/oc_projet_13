@@ -25,7 +25,7 @@ SECRET_KEY = 'k@#o6=7oc^9!u0g!#-+=umdu&&&g&#%fy_838oj0ya8#mjpxzs'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['51e08ba4.ngrok.io', '127.0.0.1']
+ALLOWED_HOSTS = ['3.16.215.144', '127.0.0.1']
 
 # Application definition
 
@@ -100,6 +100,7 @@ DATABASES = {
         "PORT": "5432",
     }
 }
+
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
 
