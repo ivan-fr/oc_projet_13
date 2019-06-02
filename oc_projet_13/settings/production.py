@@ -1,11 +1,4 @@
 from . import *
-import sentry_sdk
-from sentry_sdk.integrations.django import DjangoIntegration
-
-sentry_sdk.init(
-    dsn="https://4175407ff252412a8bb50bff87eff3c6@sentry.io/1468225",
-    integrations=[DjangoIntegration()]
-)
 
 SECRET_KEY = '-~aO;| F;rE[??/w^zcumh(91'
 DEBUG = False
