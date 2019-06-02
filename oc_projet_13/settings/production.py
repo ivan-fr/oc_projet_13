@@ -9,7 +9,7 @@ sentry_sdk.init(
 
 SECRET_KEY = '-~aO;| F;rE[??/w^zcumh(91'
 DEBUG = False
-ALLOWED_HOSTS = ['18.222.144.239']
+ALLOWED_HOSTS = ['3.16.215.144', '172.31.41.253']
 
 DATABASES = {
     'default': {
