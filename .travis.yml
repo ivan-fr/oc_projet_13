@@ -18,6 +18,12 @@ env: DJANGO_SETTINGS_MODULE="oc_projet_13.settings.travis"
 services:
   - postgresql
 
+addons:
+  postgresql: "11.2"
+  apt:
+    packages:
+      - postgresql-11
+
 script:
   - python manage.py makemigrations
   - python manage.py migrate
