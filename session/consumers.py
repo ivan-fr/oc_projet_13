@@ -117,6 +117,16 @@ class WhoIsOnlineThreadConsumer(AsyncJsonWebsocketConsumer):
             except ValueError:
                 pass
 
+    async def online_manifest_join(self, event):
+        if self.scope['user'].pk == event['recipient_user_id']:
+            await self.channel_layer.group_send(
+                f"whoisonline_thread_{event['thread_id']}",
+                {
+                    "type": "online.join",
+                    "recipient_user_id": event['recipient_user_id'],
+                }
+            )
+
     async def online_join(self, event):
         """
         Called when someone has joined our chat.
@@ -220,7 +230,7 @@ class ThreadConsumer(AsyncJsonWebsocketConsumer):
         await self.channel_layer.group_send(
             f"whoisonline_thread_{self.thread.pk}",
             {
-                "type": "online.join",
+                "type": "online.manifest.join",
                 "recipient_user_id": await self.thread_get_recipient_user(),
                 "thread_id": self.thread.pk
             }
