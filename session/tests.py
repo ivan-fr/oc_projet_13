@@ -14,9 +14,6 @@ class AuthenticatedViewsTestCase(TestCase):
         User.objects.create_user(**self.credentials_2)
         self.client.login(**self.credentials)
 
-    def tearDown(self):
-        self.client.logout()
-
     def test_login_redirect(self):
         """test of the login redirection"""
 

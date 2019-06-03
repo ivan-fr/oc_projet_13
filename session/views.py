@@ -147,7 +147,5 @@ class InboxView(ListView):
 
     def get_queryset(self):
         return self.model.objects.by_user(self.request.user).annotate(
-            nb_message_not_me=Count(F("chatmessage"),
-                                    filter=~Q(chatmessage__user=self.request.user)),
             nb_message=Count(F("chatmessage"))
         )

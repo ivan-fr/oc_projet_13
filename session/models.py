@@ -44,7 +44,7 @@ class Thread(models.Model):
 
     @property
     def room_group_name(self):
-        return f'chat_{self.id}'
+        return f'thread_{self.pk}'
 
 
 class ChatMessage(models.Model):

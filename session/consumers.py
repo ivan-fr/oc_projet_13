@@ -185,7 +185,7 @@ class ThreadConsumer(AsyncJsonWebsocketConsumer):
             self.thread = await self.get_thread()
             if self.thread is None:
                 await self.close()
-            self.groups = [f'thread_{self.thread.pk}']
+            self.groups = [self.thread.room_group_name]
             """
             Called when a WebSocket connection is opened.
             """

@@ -95,7 +95,6 @@ class AuthenticatedViewsTestCase(TestCase):
         PayPalIPN._postback = lambda _self: b"VERIFIED"
 
     def tearDown(self):
-        self.client.logout()
         PayPalIPN._postback = self.old_postback
 
     def test_get_CommandeFormsetView(self):
