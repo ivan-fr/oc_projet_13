@@ -13,13 +13,19 @@ branches:
   only:
     - master
 
-env: DJANGO_SETTINGS_MODULE="oc_projet_13.settings.travis"
-
 services:
   - postgresql
 
 addons:
-  postgresql: "11.2"
+  postgresql: "10"
+  apt:
+    packages:
+      - postgresql-10
+      - postgresql-client-10
+env:
+  global:
+    - PGPORT=5433
+    - DJANGO_SETTINGS_MODULE="oc_projet_13.settings.travis"
 
 script:
   - python manage.py makemigrations
