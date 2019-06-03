@@ -13,10 +13,6 @@ branches:
 services:
   - postgresql
 
-dist: xenial
-addons:
-  postgresql: "9.5"
-
 env: DJANGO_SETTINGS_MODULE="oc_projet_13.settings.travis"
 
 script:
