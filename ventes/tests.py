@@ -62,6 +62,8 @@ class AuthenticatedViewsTestCase(TestCase):
     # run before each test.
     def setUp(self):
         self.credentials = {'username': 'a-user', 'password': 'password'}
+        self.supercredentials = {'username': 'super', 'password': 'super', 'email': 'super@yahoo.com'}
+        User.objects.create_superuser(**self.supercredentials)
         self.user = User.objects.create_user(**self.credentials)
         self.client.login(**self.credentials)
 
@@ -265,3 +267,14 @@ class AuthenticatedViewsTestCase(TestCase):
 
         self.assertTrue(commande_meeting.qrcode is not None)
         self.assertTrue(self.commande.payment_status)
+
+    def test_TurnoverView(self):
+        self.client.logout()
+        self.client.login(**self.supercredentials)
+        response = self.client.get(
+            reverse('ventes:commandes-turnover')
+        )
+
+        self.assertTemplateUsed(response, 'ventes/turnover.html')
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNotNone(response.context['by_month'])

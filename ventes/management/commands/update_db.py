@@ -8,7 +8,7 @@ from ventes.models import Commande
 
 
 class Command(BaseCommand):
-    help = 'Update the database with the openfoodfacts API'
+    help = 'Update the database for clean commands'
 
     def handle(self, *args, **options):
 
@@ -18,7 +18,7 @@ class Command(BaseCommand):
             commandes_counts = commandes.count()
 
             self.stdout.write(self.style.SUCCESS(
-                f"Il y a {commandes_counts} commandes"
+                f"Il y a {commandes_counts} commandes."
             ))
 
             now = datetime.datetime.now()

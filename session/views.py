@@ -85,6 +85,7 @@ class WhoIsOnlineView(ListView):
     model = User
     allow_empty = True
     paginate_by = 10
+    ordering = ('pk',)
 
     def get_queryset(self):
         queryset = super(WhoIsOnlineView, self).get_queryset()
