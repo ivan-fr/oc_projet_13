@@ -20,9 +20,6 @@ services:
 
 addons:
   postgresql: "11.2"
-  apt:
-    packages:
-      - postgresql-11
 
 script:
   - python manage.py makemigrations
