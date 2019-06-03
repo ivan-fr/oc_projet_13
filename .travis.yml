@@ -13,15 +13,11 @@ branches:
 services:
   - postgresql
 
+dist: xenial
 addons:
   postgresql: "11"
-  apt:
-    packages:
-      - postgresql-11
-      - postgresql-client-11
-env:
-  global:
-    - DJANGO_SETTINGS_MODULE="oc_projet_13.settings.travis"
+
+env: DJANGO_SETTINGS_MODULE="oc_projet_13.settings.travis"
 
 script:
   - python manage.py makemigrations
