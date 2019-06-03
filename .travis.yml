@@ -1,7 +1,6 @@
-
 language: python
 python:
-  - "3.6.3"
+  - "3.6"
 
 before_script:
   - psql -c 'create database travis_ci_test;' -U postgres
@@ -22,4 +21,4 @@ services:
 script:
   - python manage.py makemigrations
   - python manage.py migrate
-- python manage.py test
+  - python manage.py test
