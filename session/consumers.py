@@ -13,11 +13,11 @@ from django.urls import reverse
 
 
 class WhoIsOnlineConsumer(AsyncJsonWebsocketConsumer):
+    """ Online websocket, you can know if a administator is connected. """
     groups = ["whoisonline"]
 
     async def connect(self):
         await self.accept()
-
         if bool(int(self.scope["url_route"]["kwargs"]["askmanifest"])):
             await self.channel_layer.group_send(
                 self.groups[0],
@@ -76,6 +76,8 @@ class WhoIsOnlineConsumer(AsyncJsonWebsocketConsumer):
 
 
 class WhoIsOnlineThreadConsumer(AsyncJsonWebsocketConsumer):
+    """ websocket for the online threads. You can know if your recipient is connected """
+
     groups = ["whoisonlinethread"]
 
     async def connect(self):
@@ -174,6 +176,7 @@ class WhoIsOnlineThreadConsumer(AsyncJsonWebsocketConsumer):
                             "user_id": self.scope['user'].pk,
                         }
                     )
+                del self.scope['session']['listen_thread_group_name']
             except AttributeError:
                 raise InvalidChannelLayerError(
                     "BACKEND is unconfigured or doesn't support groups"
@@ -185,6 +188,7 @@ class WhoIsOnlineThreadConsumer(AsyncJsonWebsocketConsumer):
 
 
 class ThreadConsumer(AsyncJsonWebsocketConsumer):
+    """ websocket for the threads and send messages to each other. """
 
     async def websocket_connect(self, message):
         if self.scope["user"].is_anonymous:
@@ -286,15 +290,15 @@ class ThreadConsumer(AsyncJsonWebsocketConsumer):
         )
 
     async def disconnect(self, code):
-        g = f"whoisonline_thread_{self.thread.pk}"
+        whoisoline_thread_group_name = f"whoisonline_thread_{self.thread.pk}"
 
         await self.channel_layer.group_send(
-            g,
+            whoisoline_thread_group_name,
             {
                 "type": "online.clean.im",
                 "recipient_user_id": await self.thread_get_recipient_user(),
                 "thread_id": self.thread.pk,
-                "group_name": g
+                "group_name": whoisoline_thread_group_name
             }
         )
 
