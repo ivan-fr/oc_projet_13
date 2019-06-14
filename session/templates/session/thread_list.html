@@ -21,8 +21,7 @@
                                     <li>
                                         <a href="{% url "session:thread" thread.first %}">
                                             Discussion avec {{ thread.first }}
-                                            avec {{ thread.nb_message_not_me }} provenant du
-                                            destinataire pour un total de {{ thread.nb_message }} message(s).
+                                            pour un total de {{ thread.nb_message }} message(s).
                                         </a>
                                     </li>
                                 {% endif %}
