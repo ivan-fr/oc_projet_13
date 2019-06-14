@@ -13,7 +13,8 @@
           href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
           integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr"
           crossorigin="anonymous">
-    <link rel="stylesheet" href="{% static 'catalogue/base.css' %}">
+    <link rel="stylesheet" href="{% static 'catalogue/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'catalogue/css/app.cbfafede.css' %}">
 </head>
 <body>
 
@@ -37,104 +38,111 @@
     </div>
 {% endif %}
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="{% url 'index' %}">Billetterie</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse"
-            data-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent" aria-expanded="false"
-            aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
+<div id="app">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="{% url 'index' %}">Billetterie</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse"
+                data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto">
-            {% if user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link"
-                       href="{% url 'session:logout' %}">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'ventes:commandes' %}">
-                        Mes Commandes
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'session:inbox' %}">
-                        Mes discussions
-                    </a>
-                </li>
-                {% if request.user.is_superuser %}
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link"
-                           href="{% url 'ventes:commandes-turnover' %}">
-                            Les revenues
+                           href="{% url 'session:logout' %}">
+                            <i class="fas fa-sign-out-alt"></i>
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{% url 'ventes:commandes' %}">
+                            Mes Commandes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'session:inbox' %}">
+                            Mes discussions
+                        </a>
+                    </li>
+                    {% if request.user.is_superuser %}
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               href="{% url 'ventes:commandes-turnover' %}">
+                                Les revenues
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               href="{% url 'admin:index' %}">
+                                Administration
+                            </a>
+                        </li>
+                    {% endif %}
+                {% else %}
+                    <li class="nav-item">
                         <a class="nav-link"
-                           href="{% url 'admin:index' %}">
-                            Administration
+                           data-target="#login"
+                           href="{% url 'session:login' %}">
+                            <i class="fas fa-sign-in-alt"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link js-scroll-trigger"
+                           data-target="#signup"
+                           href="{% url 'session:signup' %}">
+                            <i class="fas fa-user-plus"></i>
                         </a>
                     </li>
                 {% endif %}
-            {% else %}
-                <li class="nav-item">
-                    <a class="nav-link"
-                       data-target="#login"
-                       href="{% url 'session:login' %}">
-                        <i class="fas fa-sign-in-alt"></i>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link js-scroll-trigger"
-                       data-target="#signup"
-                       href="{% url 'session:signup' %}">
-                        <i class="fas fa-user-plus"></i>
-                    </a>
-                </li>
-            {% endif %}
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <span class="badge badge-info" id="total-cart-count"
-                          data-url-submit-button="{% url 'ventes:commande' %}"></span>
-                    Panier
-                </a>
-            </li>
-        </ul>
-    </div>
-</nav>
+                {% if not not_panier and not from_accepted_command %}
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" :class="{'active': showCart}" @click.prevent="toggleShowCart">
+                        <span class="badge badge-info" id="total-cart-count"
+                              data-url-submit-button=""></span>Panier
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
 
-<div class="container">
-    {% block body %}
-    {% endblock %}
+    <div class="container">
+        {% if not not_panier and not from_accepted_command %}
+            <shopping-cart submit_url="{% url 'ventes:commande' %}" v-show="showCart"></shopping-cart>
+        {% endif %}
 
-    <hr class="mb-0">
-    <div class="row mx-0 px-4 pt-3 background-grey">
-        <div class="col-auto">
-            <h6 class="text-uppercase">Réseaux sociaux</h6>
-            <div>
-                <a href="https://github.com/ivan-fr/oc_projet_13"
-                   target="_blank">
-                    <i class="fab fa-github"></i>
-                    Lien github
-                </a>
+        {% block body %}
+        {% endblock %}
+
+        <hr class="mb-0">
+        <div class="row mx-0 px-4 pt-3 background-grey">
+            <div class="col-auto">
+                <h6 class="text-uppercase">Réseaux sociaux</h6>
+                <div>
+                    <a href="https://github.com/ivan-fr/oc_projet_13"
+                       target="_blank">
+                        <i class="fab fa-github"></i>
+                        Lien github
+                    </a>
+                </div>
+                <div>
+                    <a href="{% url 'catalogue:legal_mention' %}">Politique de
+                        Confidentialité</a>
+                </div>
+                <div>
+                    <a href="{% url 'session:whoisonline' %}">Qui est en ligne ?</a>
+                </div>
             </div>
-            <div>
-                <a href="{% url 'catalogue:legal_mention' %}">Politique de
-                    Confidentialité</a>
-            </div>
-            <div>
-                <a href="{% url 'session:whoisonline' %}">Qui est en ligne ?</a>
-            </div>
+
         </div>
 
-    </div>
-
-    <div class="row mx-0 px-4 pb-3 background-grey">
-        <div class="col-8">
-            Ivan BESEVIC {% now 'Y' %} © Tous droits réservés.
+        <div class="row mx-0 px-4 pb-3 background-grey">
+            <div class="col-8">
+                Ivan BESEVIC {% now 'Y' %} © Tous droits réservés.
+            </div>
         </div>
     </div>
 </div>
@@ -148,14 +156,17 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
-<script src="{% static 'js/SimpleCart.js' %}"></script>
+{% if not not_panier and not from_accepted_command %}
+    <script src="{% static 'catalogue/js/chunk-vendors.9f3d799e.js' %}"></script>
+    <script src="{% static 'catalogue/js/app.71154812.js' %}"></script>
+{% endif %}
 
 <script>
     jQuery(document).ready(function ($) {
-        $('#total-cart-count').simpleCart();
-        $('.toast').toast('show');
-        $('.toast').on('hide.bs.toast', function () {
-            $(this).addClass("desactivate")
+        let toasts = $('.toast');
+        toasts.toast('show');
+        toasts.on('hide.bs.toast', function () {
+            $(this).addClass("desactivate");
         });
     });
 </script>
@@ -163,8 +174,8 @@
 {% block javascript %}
 {% endblock %}
 {% block online_js %}
-    <script src="{% static 'session/whoisonline.js' %}"></script>
-    <script src="{% static 'session/whoisonlinethread.js' %}"></script>
+    <script src="{% static 'session/js/whoisonline.js' %}"></script>
+    <script src="{% static 'session/js/whoisonlinethread.js' %}"></script>
 {% endblock %}
 </body>
 </html>

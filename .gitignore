@@ -6,3 +6,4 @@ env/*
 */*.pyc
 **/__pycache__/
 .idea/
+node_modules/

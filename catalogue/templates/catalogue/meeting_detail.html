@@ -105,19 +105,15 @@
                                                         <ul>
                                                             {% for o, key_space_residue in items %}
                                                                 <li>
-                                                                    <a tabindex="0"
-                                                                       class="sc-add-to-cart btn btn-warning mt-1"
-                                                                       data-name="{{ object.title }}"
-                                                                       data-id="{{ object.id }}"
-                                                                       data-date="{{ o|date:"d/m/Y H:i" }}"
-                                                                       data-price="{{ object.price }}"
-                                                                       href="#"
-                                                                    >
+                                                                    <button-cart title="{{ object.title }}"
+                                                                                 date="{{ o|date:"d/m/Y H:i" }}"
+                                                                                 :id="{{ object.id }}"
+                                                                                 :price="{{ object.price|float_to_str_to_point }}"
+                                                                                 :inventory="{{ space_available|get_obj_attr:key_space_residue }}">
                                                                         {{ o|date:"H:i" }}
-                                                                        - {{ space_available|get_obj_attr:key_space_residue }}
-                                                                        places
-                                                                    </a>
-                                                                </li>{% endfor %}
+                                                                    </button-cart>
+                                                                </li>
+                                                            {% endfor %}
                                                         </ul>
                                                     {% endif %}
                                                 {% endif %}

@@ -67,8 +67,7 @@
     <script>
         jQuery(function ($) {
             {% if from_accepted_command %}
-                simple_cart = $('#total-cart-count').data('simpleCart');
-                simple_cart._clearCart();
+                localStorage.setItem("V3simpleCart", JSON.stringify([]));
             {% endif %}
 
             $('#commande .printme').click(function () {

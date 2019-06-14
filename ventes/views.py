@@ -41,7 +41,7 @@ class CommandeFormsetView(FormSetView):
                 request.GET.get('initial_formset_commande', '[]'))
             sign = signing.dumps(self.initial)
 
-            ids = tuple(set(_dict['id'] for _dict in self.initial))
+            ids = tuple(set(int(_dict['id']) for _dict in self.initial))
             meetings = dict(
                 Meeting.objects.filter(pk__in=ids).values_list('pk', 'price'))
             meetings = {str(key): value for key, value in meetings.items()}
@@ -55,6 +55,9 @@ class CommandeFormsetView(FormSetView):
 
     @method_decorator(login_required)
     def post(self, request, *args, **kwargs):
+        self.extra_context = {
+            'not_panier': True
+        }
         self.template_name = 'ventes/commande_formset_post.html'
         self.initial = signing.loads(request.POST.get('form-sign'))
         return super(CommandeFormsetView, self).post(request, *args, **kwargs)
@@ -80,11 +83,11 @@ class CommandeFormsetView(FormSetView):
                 data[cleaned_data['id']] \
                     .append(
                     {'date_meeting': cleaned_data['date'],
-                     'quantity': cleaned_data['count']})
+                     'quantity': cleaned_data['quantity']})
             except KeyError:
                 data[cleaned_data['id']] = [{
                     'date_meeting': cleaned_data['date'],
-                    'quantity': cleaned_data['count']
+                    'quantity': cleaned_data['quantity']
                 }]
 
         with transaction.atomic():
@@ -118,6 +121,9 @@ class CommandeFormsetView(FormSetView):
 class CommandeTemplateView(TemplateView):
     """ Render the command templates """
     template_name = 'ventes/commande.html'
+    extra_context = {
+        'not_panier': True
+    }
 
 
 class CommandeMixinView(object):

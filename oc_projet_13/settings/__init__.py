@@ -25,7 +25,7 @@ SECRET_KEY = 'k@#o6=7oc^9!u0g!#-+=umdu&&&g&#%fy_838oj0ya8#mjpxzs'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -138,7 +138,7 @@ MEDIA_URL = '/oc_projet_13/uploads/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'oc_projet_13', 'uploads')
 
 DEPARTMENTS_FILE = os.path.join(BASE_DIR, "catalogue", "static",
-                                "departments.json")
+                                "catalogue/json/departments.json")
 
 LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = '/session/login/'
@@ -153,3 +153,4 @@ EMAIL_HOST_PASSWORD = 'bonjourni32145.3'
 EMAIL_PORT = 587
 
 INTERNAL_IPS = ['127.0.0.1']
+

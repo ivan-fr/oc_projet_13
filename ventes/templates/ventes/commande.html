@@ -20,11 +20,9 @@
 {% block javascript %}
     <script>
         jQuery(function ($) {
-            simple_cart = $('#total-cart-count').data('simpleCart');
-            simple_cart._disableEvents();
             let card_body = $('#formset_commande_container');
             params = {
-                'initial_formset_commande': JSON.stringify(simple_cart.cart)
+                'initial_formset_commande': localStorage.getItem('V3simpleCart')
             };
             $.get(card_body.attr("data-commande-formset-url"), $.param(params), function (data, status) {
                 card_body.html(data);

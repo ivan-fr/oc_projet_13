@@ -149,7 +149,7 @@ MEDIA_URL = '/oc_projet_13/uploads/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'oc_projet_13', 'uploads')
 
 DEPARTMENTS_FILE = os.path.join(BASE_DIR, "catalogue", "static",
-                                "departments.json")
+                                "catalogue/json/departments.json")
 
 LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = '/session/login/'

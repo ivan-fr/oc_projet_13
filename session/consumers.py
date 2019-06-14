@@ -17,7 +17,11 @@ class WhoIsOnlineConsumer(AsyncJsonWebsocketConsumer):
     groups = ["whoisonline"]
 
     async def connect(self):
-        await self.accept()
+        if self.scope["user"].is_anonymous:
+            # Reject the connection
+            await self.close()
+        else:
+            await self.accept()
         if bool(int(self.scope["url_route"]["kwargs"]["askmanifest"])):
             await self.channel_layer.group_send(
                 self.groups[0],

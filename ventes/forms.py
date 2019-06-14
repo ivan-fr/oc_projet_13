@@ -12,9 +12,9 @@ class CommandeForm(forms.Form):
     """form of command validation"""
 
     id = forms.IntegerField(min_value=1, disabled=True)
-    name = forms.CharField(max_length=32, min_length=2, disabled=True)
+    title = forms.CharField(max_length=32, min_length=2, disabled=True)
     date = forms.DateTimeField(input_formats=['%d/%m/%Y %H:%M'], disabled=True)
-    count = forms.IntegerField(min_value=1, max_value=9)
+    quantity = forms.IntegerField(min_value=1, max_value=9)
 
     def clean(self):
         if not self.is_valid():
@@ -35,7 +35,7 @@ class CommandeForm(forms.Form):
             ).annotate(
                 place_restante=F('place__space_available')
                                - F('nombre_de_place_reserve')
-                               - self.cleaned_data['count']
+                               - self.cleaned_data['quantity']
             ).first()
 
             if meeting.place_restante < 0:

@@ -27,3 +27,8 @@ def leadingzero(number):
 def multiply(x1, x2):
     # you would need to do any localization of the result here
     return "%.2f" % (float(x1) * float(x2))
+
+
+@register.filter
+def float_to_str_to_point(value):
+    return str(value).replace(",", ".")
