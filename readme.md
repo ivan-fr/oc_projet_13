@@ -11,6 +11,8 @@
 * Installer les dépendances : `pip install -r requirements.txt`
 
 ## 2 - Lancer le programme 
+* Exécuter : `python3 ./manage makemigrations`  depuis la console
+* Exécuter : `python3 ./manage migrate`  depuis la console
 * Exécuter : `python3 ./manage runserver`  depuis la console
 
 --------
