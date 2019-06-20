@@ -42,10 +42,10 @@
                                 </div>
                                 <div class="form-group col-md-auto">
                                     {% for key, value in meetings.items %}
-                                        {% if key == form.id.value %}
+                                        {% if key == form.id.value|stringformat:"i" %}
                                             <span class="meeting-price">
-                                                    {% multiply meetings|get_dict_attr:key form.quantity.value %}
-                                                </span>
+                                                {% multiply meetings|get_dict_attr:key form.quantity.value %}
+                                            </span>
                                             <span class="single-meeting-price"
                                                   data-single-meeting-price="{{ meetings|get_dict_attr:key }}"></span>
                                             <i class="fas fa-euro-sign"></i>

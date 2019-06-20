@@ -126,19 +126,19 @@ class AuthenticatedViewsTestCase(TestCase):
                         ';BYMINUTE=' + next_monday.strftime('%M')
         )
 
-        sign = signing.dumps([{'name': meeting.title,
+        sign = signing.dumps([{'title': meeting.title,
                                'date': next_monday.strftime('%d/%m/%Y %H:%M'),
                                'id': str(meeting.pk),
-                               'count': '1'}])
+                               'quantity': '1'}])
 
         data = {
             'form-TOTAL_FORMS': '1',
             'form-INITIAL_FORMS': '1',
             'form-MAX_NUM_FORMS': '3',
-            'form-0-name': meeting.title,
+            'form-0-title': meeting.title,
             'form-0-date': next_monday.strftime('%d/%m/%Y %H:%M'),
             'form-0-id': str(meeting.pk),
-            'form-0-count': '1',
+            'form-0-quantity': '1',
             'form-sign': sign
         }
 
