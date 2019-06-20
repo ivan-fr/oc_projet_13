@@ -18,7 +18,7 @@ jQuery(function ($) {
     }
 
     console.log("Connecting to " + ws_path);
-    let onlinesocket = new ReconnectingWebSocket(ws_path);
+    let onlinesocket = new WebSocket(ws_path);
 
     setTimeout(function () {
         $.each(environment, function (key, element) {

@@ -225,12 +225,9 @@ jQuery(function ($) {
             }
 
         }, 1000);
-
-
     } else {
         console.log("Connecting to " + ws_path);
         onlinethreadsocket = new WebSocket(ws_path + '/0');
         initonlinethreadsocket();
     }
 });
-
