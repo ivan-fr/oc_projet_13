@@ -95,9 +95,9 @@ class CommandeFormsetView(FormSetView):
                 user=self.request.user
             )
 
-            for key, dicts in data.items():
+            for pk, dicts in data.items():
                 commandes_meetings = []
-                meeting = Meeting.objects.get(pk=key)
+                meeting = Meeting.objects.get(pk=pk)
                 for _dict in dicts:
                     commandes_meetings.append(CommandeMeeting(
                         from_commande=commande,

@@ -131,6 +131,8 @@
             </div>
         </div>
     </div>
+
+    <span id="comments_" data-url-comments="{% url 'catalogue:show-meetingcomments' object.pk %}"></span>
 {% endblock %}
 
 {% block javascript %}
@@ -139,7 +141,7 @@
     ></script>
     <script>
         jQuery(function ($) {
-            class lol {
+            class RenderMap {
                 constructor(adress) {
                     this.adress = adress;
                     this.getLatLngFromAdress();
@@ -190,7 +192,11 @@
                 }
             }
 
-            new lol($('#event_adresss').text())
+            new RenderMap($('#event_adresss').text());
+
+            $.get($('#comments_').attr("data-url-comments"), function (data, status) {
+                $('#comments_').html(data);
+            });
         });
     </script>
 {% endblock %}

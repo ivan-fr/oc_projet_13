@@ -18,9 +18,11 @@ urlpatterns = [
     re_path(r'^(?P<department_code>[\d]+)/$', views.IndexView.as_view(),
             name='index'),
     re_path(r'^event_type/(?P<event_type_pk>[\d]+)/$',
-            views.EventTypeView.as_view(), name='show-eventtype'),
+            views.MeetingsView.as_view(), name='show-eventtype'),
     re_path(r'^meeting/(?P<meeting_pk>[\d]+)/$',
             views.MeetingView.as_view(), name='show-meeting'),
+    re_path(r'^meetingcomments/(?P<meeting_pk>[\d]+)/$',
+            views.MeetingCommentsView.as_view(), name='show-meetingcomments'),
     path('legal-mention/', views.LegalMentionTemplateView.as_view(),
          name='legal_mention')
 ]

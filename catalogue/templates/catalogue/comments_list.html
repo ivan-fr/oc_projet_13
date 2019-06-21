@@ -1,0 +1,121 @@
+{% load widget_tweaks %}
+
+{% if user.is_authenticated %}
+    <hr>
+
+    <form action="{% url 'catalogue:show-meetingcomments' meeting_pk %}" method="post" id="comment_form">
+        {% csrf_token %}
+        {% if form.errors %}
+            {{ form.errors }}
+        {% endif %}
+        {{ form.id.as_hidden }}
+        <div class="form-row">
+            <div class="form-group col-md-12">
+                {{ form.texte.errors }}
+                {{ form.texte.label_tag }}
+                {{ form.texte|add_class:"form-control" }}
+            </div>
+        </div>
+        <input type="submit" class="btn btn-primary" value="Envoyer"/>
+    </form>
+{% endif %}
+
+<hr>
+
+<div id="comment_detail">
+    <h4>Il y a {{ comments_count }} commentaire(s)</h4>
+    <ul>
+        {% for object in object_list %}
+            <li>{{ object.texte }} de <strong>{{ object.user.username }}</strong> le {{ object.date }}</li>
+        {% empty %}
+            <li>Il n'y a pas de commentaire.</li>
+        {% endfor %}
+    </ul>
+
+    {% if is_paginated %}
+        <nav>
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{% url 'catalogue:show-meetingcomments' meeting_pk %}?page={{ page_obj.previous_page_number }}"
+                           aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                            <span class="sr-only">Previous</span>
+                        </a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item">
+                    <a class="page-link"
+                       href="#">Page {{ page_obj.number }}
+                        sur {{ page_obj.paginator.num_pages }}</a>
+                </li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{% url 'catalogue:show-meetingcomments' meeting_pk %}?page={{ page_obj.next_page_number }}"
+                           aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                            <span class="sr-only">Next</span>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+            <script>
+                $('.pagination a').click(function (e) {
+                    e.preventDefault();
+                    if ($(this).attr('href') !== "#") {
+                        $.get($(this).attr('href'), function (data, status) {
+                            $('#comment_detail').html(data)
+                        })
+                    }
+                })
+            </script>
+        </nav>
+    {% endif %}
+</div>
+
+
+<script>
+    jQuery(function ($) {
+        function comment_form_listener(e) {
+            e.preventDefault();
+            let formdata = new FormData(e.target),
+                data = {};
+
+            for (let [key, value] of formdata.entries()) {
+                data[key] = value;
+            }
+
+            let errors_form = e.target.querySelectorAll(".list-error");
+
+            Array.prototype.forEach.call(errors_form, function (element) {
+                element.parentNode.removeChild(element);
+            });
+
+            $.post(e.target.action, data, function (data) {
+                if (data.errors_form !== null && data.errors_form !== undefined) {
+                    data.errors_form.forEach(function (element) {
+                        let parent_input = document.getElementById("id_" + element[0]).parentNode;
+                        let errors_ul = document.createElement("ul");
+                        errors_ul.classList.add("list-error");
+                        element[1].forEach(function (sub_element) {
+                            let errors_li = document.createElement("li");
+                            errors_li.appendChild(document.createTextNode(sub_element));
+                            errors_ul.appendChild(errors_li);
+                        });
+                        parent_input.prepend(errors_ul);
+                    });
+                } else {
+                    $('#comment_detail').html(data.html)
+                }
+            });
+
+            this.reset();
+        }
+
+        $("form#comment_form").on("submit", comment_form_listener);
+    });
+</script>

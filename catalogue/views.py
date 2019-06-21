@@ -8,8 +8,14 @@ from django.db.models import Q, F, Count, Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.views.generic import ListView, DetailView, TemplateView
+from django.views.generic.edit import FormMixin
+from django.http import Http404, HttpResponse
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required
+from django.template.loader import render_to_string
 
-from catalogue.models import Meeting, Place
+from catalogue.models import Meeting, Place, Comments
+from catalogue.forms import CommentsForm
 from swingtime.models import EventType
 
 
@@ -30,25 +36,21 @@ class IndexView(ListView):
 
     def get(self, request, *args, **kwargs):
         with open(settings.DEPARTMENTS_FILE, "r", encoding="utf-8") as file:
-            self.departments = {
+            departments = {
                 department['code']: department['name']
                 for department in json.load(file)
             }
-        return super(IndexView, self).get(request, *args, **kwargs)
 
-    def get_context_data(self, *args, object_list=None, **kwargs):
-        _dict = {
+        self.extra_context = {
             'root_events_types': EventType.get_root_nodes(),
-            'departments': self.departments,
+            'departments': departments,
             'filled_departments': Place.objects.values('department').annotate(
                 count_meeting=Count('meeting')
             ).filter(count_meeting__gt=0).order_by(
                 '-count_meeting', ).distinct()[:5],
             'index': True
         }
-        _dict.update(kwargs)
-        return super(IndexView, self).get_context_data(object_list=None,
-                                                       **_dict)
+        return super(IndexView, self).get(request, *args, **kwargs)
 
 
 class LegalMentionTemplateView(TemplateView):
@@ -57,7 +59,7 @@ class LegalMentionTemplateView(TemplateView):
     template_name = 'catalogue/legal_mention.html'
 
 
-class EventTypeView(ListView):
+class MeetingsView(ListView):
     """ Render events types view"""
 
     allow_empty = True
@@ -69,25 +71,20 @@ class EventTypeView(ListView):
             Q(event_type__parent=self.eventtype) |
             Q(event_type=self.eventtype)
         )
-        return super(EventTypeView, self).get_queryset()
+        return super(MeetingsView, self).get_queryset()
 
     def get(self, request, *args, **kwargs):
-        self.root_events_types = EventType.get_root_nodes()
+        root_events_types = EventType.get_root_nodes()
         self.eventtype = EventType.objects.filter(
             pk=kwargs['event_type_pk']).first()
-        self.ancestors = self.eventtype.get_ancestors()
-        return super(EventTypeView, self).get(request, *args, **kwargs)
+        ancestors = self.eventtype.get_ancestors()
 
-    def get_context_data(self, *args, object_list=None, **kwargs):
-        _dict = {
-            'root_events_types': self.root_events_types,
-            'eventtype': self.ancestors[0] if self.ancestors else
-            self.eventtype,
+        self.extra_context = {
+            'root_events_types': root_events_types,
+            'eventtype': ancestors[0] if ancestors else self.eventtype,
             'selected_eventtype': self.eventtype
         }
-        _dict.update(kwargs)
-        return super(EventTypeView, self).get_context_data(object_list=None,
-                                                           **_dict)
+        return super(MeetingsView, self).get(request, *args, **kwargs)
 
 
 class MeetingView(DetailView):
@@ -211,3 +208,81 @@ class MeetingView(DetailView):
 
         context = self.get_context_data(**_dict)
         return self.render_to_response(context)
+
+
+class MeetingCommentsView(FormMixin, ListView):
+    form_class = CommentsForm
+    model = Comments
+    allow_empty = True
+    paginate_by = 6
+    ordering = '-date'
+
+    def get(self, request, *args, **kwargs):
+        if request.is_ajax():
+            self.queryset = self.model.objects.filter(meeting=kwargs.get('meeting_pk')).select_related('user')
+            if self.request.GET.get(self.page_kwarg) is not None:
+                self.template_name = 'catalogue/comment_post.html'
+            return super(MeetingCommentsView, self).get(request, *args, **kwargs)
+        else:
+            raise Http404("Request have to be ajax.")
+
+    @method_decorator(login_required)
+    def post(self, request, *args, **kwargs):
+        """
+        Handle POST requests: instantiate a form instance with the passed
+        POST variables and then check if it's valid.
+        """
+        if request.is_ajax():
+            form = self.get_form()
+            if form.is_valid():
+                return self.form_valid(form)
+            else:
+                return self.form_invalid(form)
+        else:
+            raise Http404("Request have to be ajax.")
+
+    def form_valid(self, form):
+        comment = form.save(commit=False)
+        comment.user = self.request.user
+        comment.meeting = Meeting.objects.get(pk=self.kwargs.get('meeting_pk'))
+        comment.save()
+
+        self.queryset = self.model.objects.select_related('user').filter(meeting=self.kwargs.get('meeting_pk'))
+        self.object_list = self.get_queryset()
+
+        return HttpResponse(json.dumps({
+            'html': render_to_string('catalogue/comment_post.html', self.get_context_data())
+        }), content_type='application/json')
+
+    def form_invalid(self, form):
+        return HttpResponse(json.dumps({
+            'errors_form': list(form.errors.items())
+        }), content_type='application/json')
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        """Get the context for this view."""
+        queryset = object_list if object_list is not None else self.object_list
+        page_size = self.get_paginate_by(queryset)
+        context_object_name = self.get_context_object_name(queryset)
+        if page_size:
+            paginator, page, queryset, is_paginated = self.paginate_queryset(queryset, page_size)
+            context = {
+                'paginator': paginator,
+                'page_obj': page,
+                'is_paginated': is_paginated,
+                'object_list': queryset,
+                'comments_count': paginator.count
+            }
+        else:
+            context = {
+                'paginator': None,
+                'page_obj': None,
+                'is_paginated': False,
+                'object_list': queryset,
+                'comments_count': queryset.count()
+            }
+        if context_object_name is not None:
+            context[context_object_name] = queryset
+        context.update(kwargs)
+        context.update({'meeting_pk': self.kwargs.get('meeting_pk'), 'form': self.get_form()})
+        return context

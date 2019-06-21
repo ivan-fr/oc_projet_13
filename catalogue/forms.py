@@ -4,7 +4,7 @@ from django.forms.utils import ErrorList
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
-from catalogue.models import Meeting
+from catalogue.models import Meeting, Comments
 from swingtime.models import EventType
 
 
@@ -57,3 +57,12 @@ class MeetingForm(forms.ModelForm):
 
     def clean_event_type(self):
         return EventType.objects.get(pk=self.cleaned_data['event_type'])
+
+
+class CommentsForm(forms.ModelForm):
+    class Meta:
+        model = Comments
+        fields = ('texte',)
+        widgets = {
+            'texte': forms.Textarea(attrs={'rows': 4}),
+        }
