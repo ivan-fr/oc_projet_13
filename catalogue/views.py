@@ -22,7 +22,7 @@ from swingtime.models import EventType
 class IndexView(ListView):
     """Render the index page"""
 
-    paginate_by = 5
+    paginate_by = 8
     allow_empty = True
     template_name = 'catalogue/index_list.html'
     model = Meeting
