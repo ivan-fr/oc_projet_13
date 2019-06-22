@@ -80,5 +80,5 @@ class Meeting(swingtime.Event):
 class Comments(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE)
-    texte = models.CharField(max_length=200, null=False, blank=False)
+    texte = models.CharField('Commentaire', max_length=200, null=False, blank=False)
     date = models.DateTimeField(auto_now_add=True)
