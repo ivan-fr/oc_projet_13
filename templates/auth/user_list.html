@@ -13,6 +13,7 @@
                             <tr>
                                 <th scope="col">#</th>
                                 <th scope="col">Username</th>
+                                <th scope="col">e-mail</th>
                                 <th scope="col">Status</th>
                                 <th scope="col">Action</th>
                             </tr>
@@ -22,6 +23,7 @@
                                 <tr id="superuser-{{ superuser.id }}">
                                     <td scope="row">{{ forloop.counter }}</td>
                                     <td>{{ superuser.username }}</td>
+                                    <td>{{ superuser.email }}</td>
                                     <td class="status"><span class="badge badge-secondary">||</span> En attente..</td>
                                     <td>
                                         <a href="{% url "session:thread" superuser.username %}" class="btn btn-primary">Envoyer
