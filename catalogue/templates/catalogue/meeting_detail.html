@@ -33,7 +33,10 @@
             </p>
 
             <div id="googleMap" class="map_canvas mb-3"></div>
-
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
             <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
                 <li class="nav-item">
                     <a class="nav-link active"
@@ -129,10 +132,9 @@
                     {% endif %}
                 </div>
             </div>
+            <span id="comments_" data-url-comments="{% url 'catalogue:show-meetingcomments' object.pk %}"></span>
         </div>
     </div>
-
-    <span id="comments_" data-url-comments="{% url 'catalogue:show-meetingcomments' object.pk %}"></span>
 {% endblock %}
 
 {% block javascript %}
