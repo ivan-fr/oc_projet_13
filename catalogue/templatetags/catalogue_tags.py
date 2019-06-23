@@ -28,6 +28,10 @@ def multiply(x1, x2, x3=1):
     # you would need to do any localization of the result here
     if x3 is None:
         return "%.2f" % (float(x1) * float(x2))
+    elif x1 is None:
+        return "%.2f" % (float(x2) * float(x3))
+    elif x2 is None:
+        return "%.2f" % (float(x1) * float(x3))
     else:
         return "%.2f" % (float(x1) * float(x2) * float(x3))
 
