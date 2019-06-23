@@ -211,6 +211,8 @@ class MeetingView(DetailView):
 
 
 class MeetingCommentsView(FormMixin, ListView):
+    """ Render comments parts """
+
     form_class = CommentsForm
     model = Comments
     allow_empty = True
