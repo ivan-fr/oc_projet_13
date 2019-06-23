@@ -24,9 +24,10 @@ def leadingzero(number):
 
 
 @register.simple_tag()
-def multiply(x1, x2):
+def multiply(x1, x2, x3=1):
     # you would need to do any localization of the result here
-    return "%.2f" % (float(x1) * float(x2))
+    x3 = x3 or 1
+    return "%.2f" % (float(x1) * float(x2) * float(x3))
 
 
 @register.filter

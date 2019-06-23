@@ -23,7 +23,7 @@
                     <u>{{ through.to_meeting.title }}</u>
                     le {{ through.date_meeting|date:"d/m/Y H:i" }}
                     - {% multiply through.quantity through.to_meeting.price %} <i class="fas fa-euro-sign"></i></li> HT
-                    - {% multiply through.quantity through.to_meeting.price * 1.021 %} <i class="fas fa-euro-sign"></i></li> TTC
+                    - {% multiply through.quantity through.to_meeting.price 1.021 %} <i class="fas fa-euro-sign"></i></li> TTC
                     <div class="badge badge-info">+ 2.10 %</div>
 
                     <i class="fas fa-euro-sign"></i></li> TTC

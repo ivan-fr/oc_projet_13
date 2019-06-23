@@ -26,7 +26,7 @@ IPN_POST_PARAMS = {
     "txn_id": b"51403485VH153354B",
     "receiver_email": settings.PAYPAL_RECEIVER_EMAIL,
     "payment_status": b"Completed",
-    "payment_gross": b"10.00",
+    "payment_gross": b"10.21",
     "tax": b"0.00",
     "residence_country": b"US",
     "invoice": b"0004",
@@ -51,7 +51,7 @@ IPN_POST_PARAMS = {
     "shipping": b"0.00",
     "payer_email": b"bishan_1233269544_per@gmail.com",
     "payment_type": b"instant",
-    "mc_gross": b"10.00",
+    "mc_gross": b"10.21",
     "quantity": b"1",
 }
 
