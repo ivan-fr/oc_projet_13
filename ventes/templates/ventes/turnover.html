@@ -45,10 +45,10 @@
                                         <td>
                                             {% if forloop.last %}
                                                 <b>{{ o|floatformat:2 }}
-                                                    euros</b>
+                                                    euros HT</b>
                                             {% else %}
                                                 {{ o.total_price|floatformat:2 }}
-                                                euros
+                                                euros HT
                                             {% endif %}
                                         </td>
                                         </tr>
