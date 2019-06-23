@@ -47,7 +47,7 @@ def payment_notification(sender, **kwargs):
             )
         ).filter(pk=id_commande).get()
 
-        if float(ipn_obj.mc_gross) == float(commande.total_price * 1.021) and \
+        if "%.2f" % float(ipn_obj.mc_gross) == "%.2f" % float(commande.total_price * 1.021) and \
                 ipn_obj.mc_currency == 'EUR':
             commandes_meetings = commande.from_commande.all()
 
