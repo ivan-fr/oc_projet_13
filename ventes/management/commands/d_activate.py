@@ -20,7 +20,7 @@ class Command(BaseCommand):
 
             i = 0
             for commande in commandes:
-                if commande.enabled:
+                if commande.enabled and commande.payment_status is False:
                     commande.enabled = False
                     commande.save()
                     i += 1
