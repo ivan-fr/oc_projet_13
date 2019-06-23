@@ -56,8 +56,10 @@
                 {% endfor %}
             </ul>
             <div class="mt-3">Montant total
-                : {{ object.total_price|twodigitcomma }} <i
-                        class="fas fa-euro-sign"></i></div>
+                : {{ object.total_price|twodigitcomma }} <i class="fas fa-euro-sign"></i> HT
+                => {{ ttc|twodigitcomma }} <i class="fas fa-euro-sign"></i> TTC
+                <div class="badge badge-info">+ 2.10%</div>
+            </div>
             {{ paypal_form.render }}
         </div>
     </div>

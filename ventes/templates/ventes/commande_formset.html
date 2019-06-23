@@ -46,7 +46,10 @@
 
     <div class="alert alert-info" role="alert">
         Montant total : <span class="total-quantity">0</span> <i
-            class="fas fa-euro-sign"></i>
+            class="fas fa-euro-sign"></i> HT
+        => <span class="total-quantity-ttc">0</span> <i
+            class="fas fa-euro-sign"></i> TTC
+        <div class="badge badge-info">+ 2.10 %</div>
     </div>
 
     <input type="submit" class="btn btn-primary"
@@ -64,6 +67,7 @@
                 }
             );
             $('div.alert .total-quantity').text(total_price.toFixed(2));
+            $('div.alert .total-quantity-ttc').text((total_price * 1.021).toFixed(2));
         }
 
         total_price_function();

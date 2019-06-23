@@ -205,7 +205,7 @@ class CommandeView(DetailView):
             # What you want the button to do.
             paypal_dict = {
                 "business": settings.PAYPAL_RECEIVER_EMAIL,
-                "amount": self.object.total_price,
+                "amount": self.object.total_price * 1.021,
                 "item_name": "Billetterie commande #" + str(self.object.pk)
                              + " " + str(self.object.date),
                 "notify_url": request.build_absolute_uri(reverse('paypal-ipn')),
@@ -228,8 +228,8 @@ class CommandeView(DetailView):
         context = self.get_context_data(
             paypal_form=form,
             object=self.object,
-            from_accepted_command=request.GET.get('from_accepted_command',
-                                                  False)
+            ttc=self.object.total_price * 1.021,
+            from_accepted_command=request.GET.get('from_accepted_command', False)
         )
         return self.render_to_response(context)
 

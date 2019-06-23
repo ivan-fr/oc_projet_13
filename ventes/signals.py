@@ -47,7 +47,7 @@ def payment_notification(sender, **kwargs):
             )
         ).filter(pk=id_commande).get()
 
-        if float(ipn_obj.mc_gross) == float(commande.total_price) and \
+        if float(ipn_obj.mc_gross) == float(commande.total_price * 1.021) and \
                 ipn_obj.mc_currency == 'EUR':
             commandes_meetings = commande.from_commande.all()
 
@@ -61,8 +61,8 @@ def payment_notification(sender, **kwargs):
                             filter=Q(
                                 to_meeting__date_meeting=commande_meeting.date_meeting
                             ) & (Q(to_meeting__from_commande__enabled=True)
-                              | (Q(to_meeting__from_commande__too_late_accepted_payment=True)
-                                 & Q(to_meeting__from_commande__payment_status=True)))
+                                 | (Q(to_meeting__from_commande__too_late_accepted_payment=True)
+                                    & Q(to_meeting__from_commande__payment_status=True)))
                         ), 0)
                     ).annotate(
                         place_restante=F('place__space_available')
